@@ -7,5 +7,6 @@ import (
 
 type Authorizable interface {
 	AddGrant(grantType grant.GrantType)
+
 	IssueAccessToken(request http.Request) (string, error)
 }

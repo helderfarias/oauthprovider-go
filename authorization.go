@@ -3,6 +3,8 @@ package oauthprovider
 import (
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
+	"github.com/helderfarias/oauthprovider-go/util"
+	"log"
 )
 
 type AuthorizationServer struct {
@@ -24,17 +26,21 @@ func (this *AuthorizationServer) AddGrant(grantType grant.GrantType) {
 }
 
 func (this *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
-	// 	String grantType = request.getParam(OAuthConstants.OAUTH_GRANT_TYPE);
-	// if (OAuthUtils.isEmpty(grantType)) {
-	// 	throw new InvalidRequestException(OAuthConstants.OAUTH_GRANT_TYPE);
-	// }
+	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
 
-	// if (!this.grantTypes.containsKey(grantType)) {
-	//           throw new UnSupportedGrantTypeException(grantType);
-	// }
+	if grantType == "" {
+		return "", util.NewInvalidRequestError(grantType)
+	}
 
-	// OAuthMessage message = this.grantTypes.get(grantType).handleResponse(request);
+	if _, ok := this.grants[grantType]; !ok {
+		return "", util.NewUnSupportedGrantTypeError(grantType)
+	}
 
-	// return message.encode(new OAuthJson());
-	return "message", nil
+	message := this.grants[grantType].HandleResponse(request)
+
+	if message == nil {
+		log.Fatalln("HandleResponse not intialize")
+	}
+
+	return message.Encode(), nil
 }

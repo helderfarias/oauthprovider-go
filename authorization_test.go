@@ -1,63 +1,119 @@
 package oauthprovider
 
 import (
+	"github.com/helderfarias/oauthprovider-go/encode"
+	"github.com/helderfarias/oauthprovider-go/http"
+	"github.com/helderfarias/oauthprovider-go/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-type OAuthRequestStub struct{}
+type OAuthRequestFake struct {
+	param string
+}
 
-func (o *OAuthRequestStub) GetParam(key string) string {
+type GrantTypeFake struct {
+}
+
+type MessageFake struct {
+}
+
+func (o *OAuthRequestFake) GetParam(key string) string {
+	return o.param
+}
+
+func (o *OAuthRequestFake) GetHeader(authorization string) string {
 	return ""
 }
 
-type GrantTypeStub struct{}
+func (o *OAuthRequestFake) GetClientId() string {
+	return ""
+}
 
-func (g *GrantTypeStub) Identifier() string {
+func (o *OAuthRequestFake) GetClientSecret() string {
+	return ""
+}
+
+func (o *OAuthRequestFake) GetUserName() string {
+	return ""
+}
+
+func (o *OAuthRequestFake) GetPassword() string {
+	return ""
+}
+
+func (o *OAuthRequestFake) GetGrantType() string {
+	return ""
+}
+
+func (o *OAuthRequestFake) GetRefreshToken() string {
+	return ""
+}
+
+func (o *OAuthRequestFake) GetAuthorizationBasic() []string {
+	return nil
+}
+
+func (o *OAuthRequestFake) GetRevokeToken() string {
+	return ""
+}
+
+func (g *GrantTypeFake) Identifier() string {
 	return "password"
 }
 
-func TestNotNil(t *testing.T) {
-	server := NewAuthorizationServer()
-	req := &OAuthRequestStub{}
+func (m *MessageFake) Encode() string {
+	return ""
+}
 
-	ret, err := server.IssueAccessToken(req)
-
-	assert.NotNil(t, server)
-	assert.NotEmpty(t, ret)
-	assert.Nil(t, err)
+func (o *GrantTypeFake) HandleResponse(request http.Request) encode.Message {
+	return &MessageFake{}
 }
 
 func TestShouldBeAddGrantType(t *testing.T) {
 	server := NewAuthorizationServer()
-	grantStub := &GrantTypeStub{}
+	grant := &GrantTypeFake{}
 
-	server.AddGrant(grantStub)
+	server.AddGrant(grant)
 
 	assert.Equal(t, true, server.hasGrantType("password"))
 }
 
-func TestShouldBeAccessTokenRequest(t *testing.T) {
+func TestErrorIfGrantTypeEmptyWhenGetAccessToken(t *testing.T) {
 	server := NewAuthorizationServer()
-	grantStub := &GrantTypeStub{}
-	requestStub := &OAuthRequestStub{}
+	grant := &GrantTypeFake{}
+	req := &OAuthRequestFake{param: ""}
 
-	grantStub
+	server.AddGrant(grant)
 
-	server.AddGrant(grantStub)
+	_, err := server.IssueAccessToken(req)
 
-	ret, err := server.IssueAccessToken(requestStub)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.(*util.OAuthError).GrantType, "invalid_request")
+}
+
+func TestErrorIfGrantTypeUnknownWhenGetAccessToken(t *testing.T) {
+	server := NewAuthorizationServer()
+	grant := &GrantTypeFake{}
+	req := &OAuthRequestFake{param: "unknown"}
+
+	server.AddGrant(grant)
+
+	_, err := server.IssueAccessToken(req)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, err.(*util.OAuthError).GrantType, "unsupported_grant_type")
+}
+
+func TestCreateTokenValid(t *testing.T) {
+	server := NewAuthorizationServer()
+	grant := &GrantTypeFake{}
+	req := &OAuthRequestFake{param: "password"}
+
+	server.AddGrant(grant)
+
+	token, err := server.IssueAccessToken(req)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "{accessToken: 12}", ret)
-	// when(grantMock.identifier()).thenReturn("password");
-	// when(requestMock.getParam("grant_type")).thenReturn("password");
-	// when(grantMock.handleResponse(requestMock)).thenReturn(new OAuthMessageBearer());
-	// grantMock.setServer(server);
-
-	// server.addGrantType(grantMock);
-
-	// String tokenResponse = server.issueAccessToken(requestMock);
-
-	// assertThat(tokenResponse, is(notNullValue()));
+	assert.NotEqual(t, token, "message")
 }
