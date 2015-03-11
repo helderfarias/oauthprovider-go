@@ -3,7 +3,7 @@ package http
 type Request interface {
 	GetParam(key string) string
 
-	GetHeader(authorization string) string
+	GetHeader(key string) string
 
 	GetClientId() string
 

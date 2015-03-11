@@ -7,8 +7,8 @@ import (
 type AccessToken struct {
 	ID        float64
 	Token     string
-	ExpiresAt time.Time
-	CreatedAt time.Time
+	ExpiresAt *time.Time
+	CreatedAt *time.Time
 	Client    *Client
 	User      *User
 }

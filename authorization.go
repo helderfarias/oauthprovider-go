@@ -1,15 +1,21 @@
 package oauthprovider
 
 import (
+	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
+	"github.com/helderfarias/oauthprovider-go/storage"
+	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 	"log"
+	"time"
 )
 
 type AuthorizationServer struct {
-	grants map[string]grant.GrantType
+	grants        map[string]grant.GrantType
+	tokenType     token.TokenType
+	clientStorage storage.ClientStorage
 }
 
 func NewAuthorizationServer() *AuthorizationServer {
@@ -26,11 +32,19 @@ func (a *AuthorizationServer) AddGrant(grantType grant.GrantType) {
 	a.grants[grantType.Identifier()] = grantType
 }
 
-func (a *AuthorizationServer) CreateResponse() {
-
+func (a *AuthorizationServer) CreateResponse(accessToken *model.AccessToken) encode.Message {
+	return a.tokenType.CreateResponse(accessToken)
 }
 
-func (a *AuthorizationServer) FindByCredencials() *model.Client {
+func (a *AuthorizationServer) FindByCredencials(clientId, clientSecret string) *model.Client {
+	return a.clientStorage.FindByCredencials(clientId, clientSecret)
+}
+
+func (a *AuthorizationServer) IssuerAccessToken() string {
+	return ""
+}
+
+func (a *AuthorizationServer) IssuerExpireTimeForAccessToken() *time.Time {
 	return nil
 }
 

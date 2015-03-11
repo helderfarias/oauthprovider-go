@@ -9,6 +9,6 @@ type Client struct {
 	Name         string
 	Secret       string
 	Status       int
-	lastLockAt   time.Time
-	lastUnlockAt time.Time
+	lastLockAt   *time.Time
+	lastUnlockAt *time.Time
 }
