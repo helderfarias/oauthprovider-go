@@ -1,55 +1,88 @@
 package grant
 
 import (
+	"github.com/helderfarias/oauthprovider-go/encode"
+	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
-type OAuthRequestFake struct {
+type FakeOAuthRequest struct {
 	param string
 }
 
-type MessageFake struct {
+type FakeMessage struct {
 }
 
-func (o *OAuthRequestFake) GetParam(key string) string {
+type FakeCredentialsCallback struct {
+}
+
+type FakeServer struct {
+}
+
+func (o *FakeOAuthRequest) GetParam(key string) string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetHeader(authorization string) string {
+func (o *FakeOAuthRequest) GetHeader(authorization string) string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetClientId() string {
+func (o *FakeOAuthRequest) GetClientId() string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetClientSecret() string {
+func (o *FakeOAuthRequest) GetClientSecret() string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetUserName() string {
+func (o *FakeOAuthRequest) GetUserName() string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetPassword() string {
+func (o *FakeOAuthRequest) GetPassword() string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetGrantType() string {
+func (o *FakeOAuthRequest) GetGrantType() string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetRefreshToken() string {
+func (o *FakeOAuthRequest) GetRefreshToken() string {
 	return ""
 }
 
-func (o *OAuthRequestFake) GetAuthorizationBasic() []string {
+func (o *FakeOAuthRequest) GetAuthorizationBasic() []string {
 	return nil
 }
 
-func (o *OAuthRequestFake) GetRevokeToken() string {
+func (o *FakeOAuthRequest) GetRevokeToken() string {
 	return ""
+}
+
+func (v *FakeCredentialsCallback) Find(userName, password string) *model.User {
+	return nil
+}
+
+func (f *FakeServer) FindByCredencials(clientId, clientSecret string) *model.Client {
+	return &model.Client{}
+}
+
+func (f *FakeServer) CreateResponse(accessToken *model.AccessToken) encode.Message {
+	return &encode.OAuthMessage{AccessToken: "token00", TokenType: "Bearer", ExpiresIn: 3600}
+}
+
+func (f *FakeServer) IssuerAccessToken() string {
+	return ""
+}
+
+func (f *FakeServer) IssuerExpireTimeForAccessToken() time.Time {
+	return time.Time{}
+}
+
+func (f *FakeServer) StoreAccessToken(accessToken *model.AccessToken) {
+
 }
 
 func TestCreate(t *testing.T) {
@@ -60,10 +93,12 @@ func TestCreate(t *testing.T) {
 
 func TestShouldBeCreateMessageForOnlyAccessToken(t *testing.T) {
 	grant := &PasswordGrant{}
-	req := &OAuthRequestFake{param: ""}
+	grant.callback = &FakeCredentialsCallback{}
+	grant.server = &FakeServer{}
+	req := &FakeOAuthRequest{param: ""}
 
 	message := grant.HandleResponse(req)
 
 	assert.NotNil(t, message)
-	assert.Equal(t, message.Encode(), "{\"access_token\":\"token00\", \"token_type\":\"Bearer\", \"expires_in\":3600}")
+	assert.Equal(t, message.Encode(), "{\"access_token\":\"token00\",\"token_type\":\"Bearer\",\"expires_in\":3600}")
 }

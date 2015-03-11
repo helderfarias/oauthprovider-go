@@ -1,12 +1,19 @@
 package server
 
 import (
-	"github.com/helderfarias/oauthprovider-go/grant"
-	"github.com/helderfarias/oauthprovider-go/http"
+	"github.com/helderfarias/oauthprovider-go/encode"
+	"github.com/helderfarias/oauthprovider-go/model"
+	"time"
 )
 
 type Authorizable interface {
-	AddGrant(grantType grant.GrantType)
+	FindByCredencials(clientId, clientSecret string) *model.Client
 
-	IssueAccessToken(request http.Request) (string, error)
+	IssuerAccessToken() string
+
+	IssuerExpireTimeForAccessToken() time.Time
+
+	StoreAccessToken(accessToken *model.AccessToken)
+
+	CreateResponse(accessToken *model.AccessToken) encode.Message
 }

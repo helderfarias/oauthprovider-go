@@ -3,6 +3,7 @@ package oauthprovider
 import (
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
+	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/util"
 	"log"
 )
@@ -17,26 +18,34 @@ func NewAuthorizationServer() *AuthorizationServer {
 	}
 }
 
-func (this *AuthorizationServer) hasGrantType(identified string) bool {
-	return this.grants[identified].Identifier() != ""
+func (a *AuthorizationServer) hasGrantType(identified string) bool {
+	return a.grants[identified].Identifier() != ""
 }
 
-func (this *AuthorizationServer) AddGrant(grantType grant.GrantType) {
-	this.grants[grantType.Identifier()] = grantType
+func (a *AuthorizationServer) AddGrant(grantType grant.GrantType) {
+	a.grants[grantType.Identifier()] = grantType
 }
 
-func (this *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
+func (a *AuthorizationServer) CreateResponse() {
+
+}
+
+func (a *AuthorizationServer) FindByCredencials() *model.Client {
+	return nil
+}
+
+func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
 
 	if grantType == "" {
 		return "", util.NewInvalidRequestError(grantType)
 	}
 
-	if _, ok := this.grants[grantType]; !ok {
+	if _, ok := a.grants[grantType]; !ok {
 		return "", util.NewUnSupportedGrantTypeError(grantType)
 	}
 
-	message := this.grants[grantType].HandleResponse(request)
+	message := a.grants[grantType].HandleResponse(request)
 
 	if message == nil {
 		log.Fatalln("HandleResponse not intialize")
