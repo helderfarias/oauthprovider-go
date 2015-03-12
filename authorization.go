@@ -13,9 +13,11 @@ import (
 )
 
 type AuthorizationServer struct {
-	grants        map[string]grant.GrantType
-	tokenType     token.TokenType
-	clientStorage storage.ClientStorage
+	grants             map[string]grant.GrantType
+	tokenType          token.TokenType
+	clientStorage      storage.ClientStorage
+	accessTokenStorage storage.AccessTokenStorage
+	issuer             *util.OAuthIssuer
 }
 
 func NewAuthorizationServer() *AuthorizationServer {
@@ -29,6 +31,7 @@ func (a *AuthorizationServer) hasGrantType(identified string) bool {
 }
 
 func (a *AuthorizationServer) AddGrant(grantType grant.GrantType) {
+	grantType.SetServer(a)
 	a.grants[grantType.Identifier()] = grantType
 }
 
@@ -41,11 +44,15 @@ func (a *AuthorizationServer) FindByCredencials(clientId, clientSecret string) *
 }
 
 func (a *AuthorizationServer) IssuerAccessToken() string {
-	return ""
+	return a.issuer.AccessToken()
 }
 
-func (a *AuthorizationServer) IssuerExpireTimeForAccessToken() *time.Time {
-	return nil
+func (a *AuthorizationServer) IssuerExpireTimeForAccessToken() time.Time {
+	return a.issuer.CreateExpireTimeForAccessToken()
+}
+
+func (a *AuthorizationServer) StoreAccessToken(accessToken *model.AccessToken) {
+	a.accessTokenStorage.Save(accessToken)
 }
 
 func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {

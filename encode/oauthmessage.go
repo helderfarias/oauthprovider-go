@@ -5,9 +5,9 @@ import (
 )
 
 type OAuthMessage struct {
-	AccessToken string  `json:"access_token"`
-	TokenType   string  `json:"token_type"`
-	ExpiresIn   float64 `json:"expires_in"`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int64  `json:"expires_in"`
 }
 
 func (o *OAuthMessage) Encode() string {

@@ -3,6 +3,7 @@ package oauthprovider
 import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -13,6 +14,7 @@ type OAuthRequestFake struct {
 }
 
 type GrantTypeFake struct {
+	server server.Authorizable
 }
 
 type MessageFake struct {
@@ -70,6 +72,10 @@ func (o *GrantTypeFake) HandleResponse(request http.Request) encode.Message {
 	return &MessageFake{}
 }
 
+func (g *GrantTypeFake) SetServer(origin server.Authorizable) {
+	g.server = origin
+}
+
 func TestShouldBeAddGrantType(t *testing.T) {
 	server := NewAuthorizationServer()
 	grant := &GrantTypeFake{}
@@ -77,6 +83,7 @@ func TestShouldBeAddGrantType(t *testing.T) {
 	server.AddGrant(grant)
 
 	assert.Equal(t, true, server.hasGrantType("password"))
+	assert.NotNil(t, grant.server)
 }
 
 func TestErrorIfGrantTypeEmptyWhenGetAccessToken(t *testing.T) {

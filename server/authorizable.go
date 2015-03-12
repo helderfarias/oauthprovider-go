@@ -11,7 +11,7 @@ type Authorizable interface {
 
 	IssuerAccessToken() string
 
-	IssuerExpireTimeForAccessToken() *time.Time
+	IssuerExpireTimeForAccessToken() time.Time
 
 	StoreAccessToken(accessToken *model.AccessToken)
 

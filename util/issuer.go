@@ -22,26 +22,27 @@ func (o *OAuthIssuer) RefreshToken() string {
 	return o.generateValue()
 }
 
-func (o *OAuthIssuer) CreateExpireTimeForAccessToken() *time.Time {
-	return nil
+func (o *OAuthIssuer) CreateExpireTimeForAccessToken() time.Time {
+	return o.calculateExpiryTime(ACCESS_TOKEN_VALIDITY_SECONDS)
 }
 
-func (o *OAuthIssuer) CreateExpireTimeForRefreshToken() *time.Time {
-	return nil
+func (o *OAuthIssuer) CreateExpireTimeForRefreshToken() time.Time {
+	return o.calculateExpiryTime(REFRESH_TOKEN_VALIDITY_SECONDS)
 }
 
 func (o *OAuthIssuer) generateValue() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+
 	return hex.EncodeToString(b)
 }
 
-// 	@Override
-// 	public Date createExpireTimeForAccessToken() {
-// 		return new Date(System.currentTimeMillis() + (ACCESS_TOKEN_VALIDITY_SECONDS * 1000L));
-// 	}
-
-// 	@Override
-// 	public Date createExpireTimeForRefreshToken() {
-// 		return new Date(System.currentTimeMillis() + (REFRESH_TOKEN_VALIDITY_SECONDS * 1000L));
-// 	}
+func (o *OAuthIssuer) calculateExpiryTime(daysInSeconds int) time.Time {
+	expiresAt := time.Now()
+	days := time.Duration(daysInSeconds)
+	expiresAt = expiresAt.Add(days * time.Second)
+	return expiresAt
+}
