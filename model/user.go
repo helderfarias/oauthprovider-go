@@ -1,6 +1,6 @@
 package model
 
 type User struct {
-	ID       float64
+	ID       int64
 	Password string
 }

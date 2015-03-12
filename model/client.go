@@ -5,7 +5,7 @@ import (
 )
 
 type Client struct {
-	ID           float64
+	ID           int64
 	Name         string
 	Secret       string
 	Status       int

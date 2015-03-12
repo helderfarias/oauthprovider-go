@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	REFRESH_TOKEN_VALIDITY_SECONDS = 60 * 60 * 24 * 30
-	ACCESS_TOKEN_VALIDITY_SECONDS  = 60 * 60 * 24 * 7
+	REFRESH_TOKEN_VALIDITY_SECONDS = (60 * 60 * 24 * 30) * time.Second
+	ACCESS_TOKEN_VALIDITY_SECONDS  = (60 * 60 * 24 * 7) * time.Second
 )
 
 type OAuthIssuer struct {
@@ -40,9 +40,8 @@ func (o *OAuthIssuer) generateValue() string {
 	return hex.EncodeToString(b)
 }
 
-func (o *OAuthIssuer) calculateExpiryTime(daysInSeconds int) time.Time {
+func (o *OAuthIssuer) calculateExpiryTime(daysInSeconds time.Duration) time.Time {
 	expiresAt := time.Now()
-	days := time.Duration(daysInSeconds)
-	expiresAt = expiresAt.Add(days * time.Second)
+	expiresAt = expiresAt.Add(daysInSeconds)
 	return expiresAt
 }

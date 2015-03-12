@@ -46,6 +46,46 @@ func NewUnSupportedGrantTypeError(grantType string) *OAuthError {
 	}
 }
 
+func NewBadCredentialsError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 401,
+		GrantType:  "unauthorized",
+		ErrorType:  "Full authentication is required.",
+	}
+}
+
+func NewInvalidClientError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 401,
+		GrantType:  "invalid_client",
+		ErrorType:  "Client authentication failed.",
+	}
+}
+
+func NewInvalidClientLockedError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 401,
+		GrantType:  "access_denied",
+		ErrorType:  "The customer has been blocked.",
+	}
+}
+
+func NewInvalidCredentialsError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 401,
+		GrantType:  "invalid_credentials",
+		ErrorType:  "The user credentials were incorrect.",
+	}
+}
+
+func NewInvalidRefreshError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 400,
+		GrantType:  "invalid_request",
+		ErrorType:  "The refresh token is invalid.",
+	}
+}
+
 func (i *OAuthError) Error() string {
 	bytes, err := json.Marshal(ErrorMessage{Message: i.ErrorType})
 
