@@ -15,6 +15,10 @@ type AccessToken struct {
 }
 
 func (a *AccessToken) ExpiresAtInMilliseconds() int64 {
+	if a.ExpiresAt.IsZero() {
+		return 0
+	}
+
 	return a.ExpiresAt.UnixNano() / int64(time.Millisecond)
 }
 
@@ -22,6 +26,7 @@ func (a *AccessToken) Expired() bool {
 	if a.ExpiresAt.IsZero() {
 		return false
 	}
+
 	return a.ExpiresAt.Add(-util.ACCESS_TOKEN_VALIDITY_SECONDS).Before(time.Now())
 }
 

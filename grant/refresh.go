@@ -8,16 +8,16 @@ import (
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
-type PasswordGrant struct {
+type RefreshTokenGrant struct {
 	callback VerifyCredentialsCallback
 	server   servertype.Authorizable
 }
 
-func (p *PasswordGrant) Identifier() string {
+func (p *RefreshTokenGrant) Identifier() string {
 	return util.OAUTH_PASSWORD
 }
 
-func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, error) {
+func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message, error) {
 	clientId := request.GetClientId()
 	if clientId == "" {
 		return nil, util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
@@ -28,14 +28,18 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidRequestError(util.OAUTH_CLIENT_SECRET)
 	}
 
-	authorization := request.GetAuthorizationBasic()
-	if authorization == nil ||
-		authorization[0] == "" ||
-		authorization[1] == "" {
+	authz := request.GetAuthorizationBasic()
+	if authz == nil ||
+		authz[0] == "" ||
+		authz[1] == "" {
 		return nil, util.NewBadCredentialsError()
 	}
 
-	if clientId != authorization[0] && clientSecret != authorization[1] {
+	if request.GetRefreshToken() == "" {
+		return nil, util.NewInvalidRequestError(util.OAUTH_REFRESH_TOKEN)
+	}
+
+	if clientId != authz[0] && clientSecret != authz[1] {
 		return nil, util.NewBadCredentialsError()
 	}
 
@@ -44,20 +48,18 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidClientError()
 	}
 
-	userName := request.GetUserName()
-	if userName == "" {
-		return nil, util.NewInvalidRequestError(util.OAUTH_USERNAME)
+	oldRefreshToken := p.server.FindRefreshTokenById(request.GetRefreshToken())
+	if oldRefreshToken == nil {
+		return nil, util.NewInvalidRefreshError()
 	}
 
-	password := request.GetPassword()
-	if password == "" {
-		return nil, util.NewInvalidRequestError(util.OAUTH_PASSWORD)
+	if oldRefreshToken.Expired() {
+		return nil, util.NewInvalidRefreshError()
 	}
 
-	user := p.callback.Find(userName, password)
-	if user == nil {
-		return nil, util.NewInvalidCredentialsError()
-	}
+	p.server.DeleteTokens(oldRefreshToken, oldRefreshToken.AccessToken)
+
+	user := oldRefreshToken.AccessToken.User
 
 	accessToken := p.createAccessToken(client, user)
 
@@ -66,7 +68,7 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 	return p.server.CreateResponse(accessToken, refreshToken), nil
 }
 
-func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User) *model.AccessToken {
+func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.User) *model.AccessToken {
 	accessToken := &model.AccessToken{}
 
 	accessToken.Token = p.server.IssuerAccessToken()
@@ -78,7 +80,7 @@ func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User
 	return accessToken
 }
 
-func (p *PasswordGrant) createRefreshToken(client *model.Client, user *model.User, accessToken *model.AccessToken) *model.RefreshToken {
+func (p *RefreshTokenGrant) createRefreshToken(client *model.Client, user *model.User, accessToken *model.AccessToken) *model.RefreshToken {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
 		refreshToken.Token = p.server.IssuerAccessToken()

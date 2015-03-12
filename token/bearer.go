@@ -12,11 +12,16 @@ import (
 type BearerTokenType struct {
 }
 
-func (b *BearerTokenType) CreateResponse(accessToken *model.AccessToken) encode.Message {
+func (b *BearerTokenType) CreateResponse(accessToken *model.AccessToken, refreshToken *model.RefreshToken) encode.Message {
 	msg := &encode.OAuthMessage{}
 	msg.TokenType = util.OAUTH_HEADER_NAME
-	msg.AccessToken = accessToken.Token
 	msg.ExpiresIn = accessToken.ExpiresAtInMilliseconds()
+	msg.AccessToken = accessToken.Token
+
+	if refreshToken != nil {
+		msg.RefreshToken = refreshToken.Token
+	}
+
 	return msg
 }
 

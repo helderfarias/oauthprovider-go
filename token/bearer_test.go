@@ -6,6 +6,37 @@ import (
 	"testing"
 )
 
+func TestCreateResponseWithAccessToken(t *testing.T) {
+	tokenType := &BearerTokenType{}
+	accessToken := &model.AccessToken{}
+
+	message := tokenType.CreateResponse(accessToken, nil)
+
+	assert.NotNil(t, message)
+	assert.NotContains(t, message.Encode(), "refresh_token")
+}
+
+func TestCreateResponseWithAccessTokenAndRefreshToken(t *testing.T) {
+	tokenType := &BearerTokenType{}
+	accessToken := &model.AccessToken{}
+	refreshToken := &model.RefreshToken{Token: "token"}
+
+	message := tokenType.CreateResponse(accessToken, refreshToken)
+
+	assert.NotNil(t, message)
+	assert.Contains(t, message.Encode(), "refresh_token")
+}
+
+func TestGetAccessTokenInHeader(t *testing.T) {
+	tokenType := &BearerTokenType{}
+	req := &OAuthRequestFake{}
+
+	message := tokenType.GetAccessTokenInHeader(req)
+
+	assert.NotNil(t, message)
+	assert.NotEqual(t, "", message)
+}
+
 type OAuthRequestFake struct {
 	header string
 }
@@ -48,23 +79,4 @@ func (o *OAuthRequestFake) GetAuthorizationBasic() []string {
 
 func (o *OAuthRequestFake) GetRevokeToken() string {
 	return ""
-}
-
-func TestCreate(t *testing.T) {
-	tokenType := &BearerTokenType{}
-	accessToken := &model.AccessToken{}
-
-	message := tokenType.CreateResponse(accessToken)
-
-	assert.NotNil(t, message)
-}
-
-func TestGetAccessTokenInHeader(t *testing.T) {
-	tokenType := &BearerTokenType{}
-	req := &OAuthRequestFake{}
-
-	message := tokenType.GetAccessTokenInHeader(req)
-
-	assert.NotNil(t, message)
-	assert.NotEqual(t, "", message)
 }

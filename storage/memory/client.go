@@ -8,29 +8,29 @@ import (
 type MemoryClientStorage struct {
 }
 
-var repository map[string]*model.Client
-var safeInit sync.Once
+var clientRepository map[string]*model.Client
+var clientSafeInit sync.Once
 
 func init() {
-	safeInit.Do(func() {
-		repository = make(map[string]*model.Client, 0)
+	clientSafeInit.Do(func() {
+		clientRepository = make(map[string]*model.Client, 0)
 	})
 }
 
 func (c *MemoryClientStorage) Save(entity *model.Client) {
-	repository[entity.Name] = entity
+	clientRepository[entity.Name] = entity
 }
 
 func (c *MemoryClientStorage) FindById(id string) *model.Client {
-	return repository[id]
+	return clientRepository[id]
 }
 
 func (c *MemoryClientStorage) Delete(entity *model.Client) {
-	delete(repository, entity.Name)
+	delete(clientRepository, entity.Name)
 }
 
 func (c *MemoryClientStorage) FindByCredencials(clientId, clientSecret string) *model.Client {
-	for _, v := range repository {
+	for _, v := range clientRepository {
 		if v.Name == clientId && v.Secret == clientSecret {
 			return v
 		}

@@ -86,6 +86,14 @@ func NewInvalidRefreshError() *OAuthError {
 	}
 }
 
+func NewAccessDeniedError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 401,
+		GrantType:  "access_denied",
+		ErrorType:  "The resource owner or authorization server denied the request.",
+	}
+}
+
 func (i *OAuthError) Error() string {
 	bytes, err := json.Marshal(ErrorMessage{Message: i.ErrorType})
 

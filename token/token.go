@@ -7,7 +7,7 @@ import (
 )
 
 type TokenType interface {
-	CreateResponse(accessToken *model.AccessToken) encode.Message
+	CreateResponse(accessToken *model.AccessToken, refreshToken *model.RefreshToken) encode.Message
 
 	GetAccessTokenInHeader(request http.Request) string
 }

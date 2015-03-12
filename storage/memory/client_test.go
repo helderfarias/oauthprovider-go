@@ -18,13 +18,13 @@ func TestSave(t *testing.T) {
 
 	storage.Save(entity)
 
-	assert.NotEmpty(t, repository)
+	assert.NotEmpty(t, clientRepository)
 }
 
 func TestFindByCredencials(t *testing.T) {
 	storage := &MemoryClientStorage{}
 	entity := &model.Client{Name: "client", Secret: "client00"}
-	repository[entity.Name] = entity
+	clientRepository[entity.Name] = entity
 
 	ret := storage.FindByCredencials("client", "client00")
 
@@ -37,13 +37,13 @@ func TestDelete(t *testing.T) {
 
 	storage.Delete(entity)
 
-	assert.Equal(t, 1, len(repository))
+	assert.Equal(t, 1, len(clientRepository))
 }
 
 func TestFindById(t *testing.T) {
 	storage := &MemoryClientStorage{}
 	entity := &model.Client{Name: "client", Secret: "client00"}
-	repository[entity.Name] = entity
+	clientRepository[entity.Name] = entity
 
 	ret := storage.FindById("client")
 
