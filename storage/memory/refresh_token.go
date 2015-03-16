@@ -28,3 +28,6 @@ func (c *MemoryRefreshTokenStorage) FindById(id string) *model.RefreshToken {
 func (c *MemoryRefreshTokenStorage) Delete(entity *model.RefreshToken) {
 	delete(refreshTokenRepository, entity.Token)
 }
+
+func (m *MemoryRefreshTokenStorage) DeleteByAccessToken(AccessToken *model.AccessToken) {
+}

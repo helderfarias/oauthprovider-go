@@ -13,8 +13,12 @@ type RefreshTokenGrant struct {
 	server   servertype.Authorizable
 }
 
+func (p *RefreshTokenGrant) SetServer(server servertype.Authorizable) {
+	p.server = server
+}
+
 func (p *RefreshTokenGrant) Identifier() string {
-	return util.OAUTH_PASSWORD
+	return util.OAUTH_REFRESH_TOKEN
 }
 
 func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message, error) {

@@ -9,15 +9,15 @@ import (
 )
 
 type OAuthRequest struct {
-	request *http.Request
+	HttpRequest *http.Request
 }
 
 func (o *OAuthRequest) GetParam(key string) string {
-	return o.request.URL.Query().Get(key)
+	return o.HttpRequest.URL.Query().Get(key)
 }
 
 func (o *OAuthRequest) GetHeader(key string) string {
-	return o.request.Header.Get(key)
+	return o.HttpRequest.Header.Get(key)
 }
 
 func (o *OAuthRequest) GetClientId() string {

@@ -11,5 +11,5 @@ type GrantType interface {
 
 	SetServer(server servertype.Authorizable)
 
-	HandleResponse(request http.Request) encode.Message
+	HandleResponse(request http.Request) (encode.Message, error)
 }

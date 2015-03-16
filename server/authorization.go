@@ -86,7 +86,10 @@ func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, er
 		return "", util.NewUnSupportedGrantTypeError(grantType)
 	}
 
-	message := a.grants[grantType].HandleResponse(request)
+	message, err := a.grants[grantType].HandleResponse(request)
+	if err != nil {
+		log.Fatalln("HandleResponse not intialize")
+	}
 
 	if message == nil {
 		log.Fatalln("HandleResponse not intialize")

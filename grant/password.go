@@ -9,8 +9,12 @@ import (
 )
 
 type PasswordGrant struct {
-	callback VerifyCredentialsCallback
 	server   servertype.Authorizable
+	Callback func(userName, password string) *model.User
+}
+
+func (p *PasswordGrant) SetServer(server servertype.Authorizable) {
+	p.server = server
 }
 
 func (p *PasswordGrant) Identifier() string {
@@ -54,7 +58,7 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidRequestError(util.OAUTH_PASSWORD)
 	}
 
-	user := p.callback.Find(userName, password)
+	user := p.Callback(userName, password)
 	if user == nil {
 		return nil, util.NewInvalidCredentialsError()
 	}

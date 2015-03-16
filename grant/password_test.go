@@ -15,9 +15,8 @@ func TestCreate(t *testing.T) {
 func TestShouldBeCreateMessageForOnlyAccessToken(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	callback := &FakeCredentialsCallback{}
 	grant := &PasswordGrant{}
-	grant.callback = callback
+	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -26,7 +25,6 @@ func TestShouldBeCreateMessageForOnlyAccessToken(t *testing.T) {
 	req.param["username"] = "user"
 	req.param["password"] = "user00"
 	server.credencials = &model.Client{Name: "client", Secret: "secret"}
-	callback.user = &model.User{}
 
 	message, _ := grant.HandleResponse(req)
 
@@ -59,7 +57,7 @@ func TestErrorIfClientSecretNullWhenHandleReponse(t *testing.T) {
 
 func TestErrorIfClientNotExistsWhenHandleReponse(t *testing.T) {
 	grant := &PasswordGrant{}
-	grant.callback = &FakeCredentialsCallback{}
+	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = &FakeServer{}
 	req := NewRequest()
 
@@ -75,9 +73,8 @@ func TestErrorIfClientNotExistsWhenHandleReponse(t *testing.T) {
 func TestErrorIfUserNameNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	callback := &FakeCredentialsCallback{}
 	grant := &PasswordGrant{}
-	grant.callback = callback
+	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -93,9 +90,8 @@ func TestErrorIfUserNameNullWhenHandleReponse(t *testing.T) {
 func TestErrorIfPasswordNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	callback := &FakeCredentialsCallback{}
 	grant := &PasswordGrant{}
-	grant.callback = callback
+	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -112,9 +108,8 @@ func TestErrorIfPasswordNullWhenHandleReponse(t *testing.T) {
 func TestErrorIfCallBackNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	callback := &FakeCredentialsCallback{}
 	grant := &PasswordGrant{}
-	grant.callback = callback
+	grant.Callback = func(userName, password string) *model.User { return nil }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -123,7 +118,6 @@ func TestErrorIfCallBackNullWhenHandleReponse(t *testing.T) {
 	req.param["username"] = "username"
 	req.param["password"] = "password"
 	server.credencials = &model.Client{Name: "client", Secret: "secret"}
-	callback.user = nil
 
 	_, err := grant.HandleResponse(req)
 
@@ -133,9 +127,8 @@ func TestErrorIfCallBackNullWhenHandleReponse(t *testing.T) {
 func TestErrorIfInvalidAuthorizationHashWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	callback := &FakeCredentialsCallback{}
 	grant := &PasswordGrant{}
-	grant.callback = callback
+	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
