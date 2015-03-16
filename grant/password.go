@@ -6,6 +6,7 @@ import (
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/util"
+	"log"
 )
 
 type PasswordGrant struct {
@@ -58,6 +59,7 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidRequestError(util.OAUTH_PASSWORD)
 	}
 
+	log.Println("[oauthprovider] PasswordGrant => HandleResponse: ", userName, password)
 	user := p.Callback(userName, password)
 	if user == nil {
 		return nil, util.NewInvalidCredentialsError()

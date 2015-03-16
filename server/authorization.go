@@ -77,6 +77,7 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 
 func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
+	log.Println("[oauthprovider] IssueAccessToken => grantype: ", grantType)
 
 	if grantType == "" {
 		return "", util.NewInvalidRequestError(grantType)
@@ -88,11 +89,11 @@ func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, er
 
 	message, err := a.grants[grantType].HandleResponse(request)
 	if err != nil {
-		log.Fatalln("HandleResponse not intialize")
+		return "", err
 	}
 
 	if message == nil {
-		log.Fatalln("HandleResponse not intialize")
+		log.Panicln("Handler Response not initialize")
 	}
 
 	return message.Encode(), nil

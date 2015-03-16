@@ -13,7 +13,7 @@ type OAuthRequest struct {
 }
 
 func (o *OAuthRequest) GetParam(key string) string {
-	return o.HttpRequest.URL.Query().Get(key)
+	return o.HttpRequest.PostFormValue(key)
 }
 
 func (o *OAuthRequest) GetHeader(key string) string {
@@ -36,20 +36,13 @@ func (o *OAuthRequest) GetClientSecret() string {
 	credencials := o.decodeHeader(header)
 
 	if credencials != nil {
-		return credencials[0]
+		return credencials[1]
 	}
 
 	return o.GetParam(util.OAUTH_CLIENT_SECRET)
 }
 
 func (o *OAuthRequest) GetUserName() string {
-	header := o.GetHeader(util.AUTHORIZATION)
-	credencials := o.decodeHeader(header)
-
-	if credencials != nil {
-		return credencials[0]
-	}
-
 	return o.GetParam(util.OAUTH_USERNAME)
 }
 
@@ -84,7 +77,7 @@ func (o *OAuthRequest) decodeHeader(header string) []string {
 		return nil
 	}
 
-	if authType := tokens[0]; authType != "basic" {
+	if authType := tokens[0]; strings.ToLower(authType) != "basic" {
 		return nil
 	}
 

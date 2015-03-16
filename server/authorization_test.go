@@ -68,8 +68,8 @@ func (m *MessageFake) Encode() string {
 	return ""
 }
 
-func (o *GrantTypeFake) HandleResponse(request http.Request) encode.Message {
-	return &MessageFake{}
+func (o *GrantTypeFake) HandleResponse(request http.Request) (encode.Message, error) {
+	return &MessageFake{}, nil
 }
 
 func (g *GrantTypeFake) SetServer(origin servertype.Authorizable) {
