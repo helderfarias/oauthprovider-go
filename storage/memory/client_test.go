@@ -6,13 +6,13 @@ import (
 	"testing"
 )
 
-func TestCreate(t *testing.T) {
+func TestCreateMemoryClient(t *testing.T) {
 	storage := &MemoryClientStorage{}
 
 	assert.NotNil(t, storage)
 }
 
-func TestSave(t *testing.T) {
+func TestSaveMemoryClient(t *testing.T) {
 	storage := &MemoryClientStorage{}
 	entity := &model.Client{}
 
@@ -21,7 +21,7 @@ func TestSave(t *testing.T) {
 	assert.NotEmpty(t, clientRepository)
 }
 
-func TestFindByCredencials(t *testing.T) {
+func TestFindByCredencialsMemoryClient(t *testing.T) {
 	storage := &MemoryClientStorage{}
 	entity := &model.Client{Name: "client", Secret: "client00"}
 	clientRepository[entity.Name] = entity
@@ -31,7 +31,7 @@ func TestFindByCredencials(t *testing.T) {
 	assert.Equal(t, entity, ret)
 }
 
-func TestDelete(t *testing.T) {
+func TestDeleteMemoryClient(t *testing.T) {
 	storage := &MemoryClientStorage{}
 	entity := &model.Client{Name: "client", Secret: "client00"}
 
@@ -40,7 +40,7 @@ func TestDelete(t *testing.T) {
 	assert.Equal(t, 1, len(clientRepository))
 }
 
-func TestFindById(t *testing.T) {
+func TestFindByIdMemoryClient(t *testing.T) {
 	storage := &MemoryClientStorage{}
 	entity := &model.Client{Name: "client", Secret: "client00"}
 	clientRepository[entity.Name] = entity
