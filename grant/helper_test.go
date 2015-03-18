@@ -95,9 +95,9 @@ func (f *FakeServer) IssuerExpireTimeForRefreshToken() time.Time {
 	return time.Time{}
 }
 
-func (f *FakeServer) StoreAccessToken(accessToken *model.AccessToken) {}
+func (f *FakeServer) StoreAccessToken(accessToken *model.AccessToken) error { return nil }
 
-func (f *FakeServer) StoreRefreshToken(refreshToken *model.RefreshToken) {}
+func (f *FakeServer) StoreRefreshToken(refreshToken *model.RefreshToken) error { return nil }
 
 func (f *FakeServer) HasGrantType(identified string) bool { return false }
 
@@ -105,4 +105,6 @@ func (f *FakeServer) RevokeToken(request http.Request) error { return nil }
 
 func (f *FakeServer) FindRefreshTokenById(refreshToken string) *model.RefreshToken { return nil }
 
-func (f *FakeServer) DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) {}
+func (f *FakeServer) DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error {
+	return nil
+}

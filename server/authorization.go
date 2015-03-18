@@ -62,17 +62,21 @@ func (a *AuthorizationServer) IssuerExpireTimeForRefreshToken() time.Time {
 	return a.issuer.CreateExpireTimeForRefreshToken()
 }
 
-func (a *AuthorizationServer) StoreAccessToken(token *model.AccessToken) {
-	a.AccessTokenStorage.Save(token)
+func (a *AuthorizationServer) StoreAccessToken(token *model.AccessToken) error {
+	return a.AccessTokenStorage.Save(token)
 }
 
-func (a *AuthorizationServer) StoreRefreshToken(token *model.RefreshToken) {
-	a.RefreshTokenStorage.Save(token)
+func (a *AuthorizationServer) StoreRefreshToken(token *model.RefreshToken) error {
+	return a.RefreshTokenStorage.Save(token)
 }
 
-func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) {
-	a.RefreshTokenStorage.Delete(refreshToken)
-	a.AccessTokenStorage.Delete(accessToken)
+func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error {
+	err := a.RefreshTokenStorage.Delete(refreshToken)
+	if err != nil {
+		return err
+	}
+
+	return a.AccessTokenStorage.Delete(accessToken)
 }
 
 func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
@@ -123,8 +127,15 @@ func (a *AuthorizationServer) RevokeToken(request http.Request) error {
 		return util.NewInvalidAccessTokenError()
 	}
 
-	a.RefreshTokenStorage.DeleteByAccessToken(accessToken)
-	a.AccessTokenStorage.Delete(accessToken)
+	err := a.RefreshTokenStorage.DeleteByAccessToken(accessToken)
+	if err != nil {
+		return util.NewOAuthRuntimeError()
+	}
+
+	err = a.AccessTokenStorage.Delete(accessToken)
+	if err != nil {
+		return util.NewOAuthRuntimeError()
+	}
 
 	return nil
 }

@@ -94,6 +94,14 @@ func NewAccessDeniedError() *OAuthError {
 	}
 }
 
+func NewOAuthRuntimeError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 500,
+		GrantType:  "runtime_error",
+		ErrorType:  "OAuthRuntime error",
+	}
+}
+
 func (i *OAuthError) Error() string {
 	bytes, err := json.Marshal(ErrorMessage{Message: i.ErrorType})
 

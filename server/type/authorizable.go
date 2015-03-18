@@ -16,15 +16,15 @@ type Authorizable interface {
 
 	RevokeToken(request http.Request) error
 
-	DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken)
+	DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error
 
 	IssuerExpireTimeForAccessToken() time.Time
 
 	IssuerExpireTimeForRefreshToken() time.Time
 
-	StoreAccessToken(token *model.AccessToken)
+	StoreAccessToken(token *model.AccessToken) error
 
-	StoreRefreshToken(token *model.RefreshToken)
+	StoreRefreshToken(token *model.RefreshToken) error
 
 	HasGrantType(identified string) bool
 
