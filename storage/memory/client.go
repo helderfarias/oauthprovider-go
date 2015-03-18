@@ -17,16 +17,18 @@ func init() {
 	})
 }
 
-func (c *MemoryClientStorage) Save(entity *model.Client) {
+func (c *MemoryClientStorage) Save(entity *model.Client) error {
 	clientRepository[entity.Name] = entity
+	return nil
 }
 
 func (c *MemoryClientStorage) FindById(id string) *model.Client {
 	return clientRepository[id]
 }
 
-func (c *MemoryClientStorage) Delete(entity *model.Client) {
+func (c *MemoryClientStorage) Delete(entity *model.Client) error {
 	delete(clientRepository, entity.Name)
+	return nil
 }
 
 func (c *MemoryClientStorage) FindByCredencials(clientId, clientSecret string) *model.Client {

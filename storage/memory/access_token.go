@@ -17,14 +17,16 @@ func init() {
 	})
 }
 
-func (c *MemoryAccessTokenStorage) Save(entity *model.AccessToken) {
+func (c *MemoryAccessTokenStorage) Save(entity *model.AccessToken) error {
 	accessTokenRepository[entity.Token] = entity
+	return nil
 }
 
 func (c *MemoryAccessTokenStorage) FindById(id string) *model.AccessToken {
 	return accessTokenRepository[id]
 }
 
-func (c *MemoryAccessTokenStorage) Delete(entity *model.AccessToken) {
+func (c *MemoryAccessTokenStorage) Delete(entity *model.AccessToken) error {
 	delete(accessTokenRepository, entity.Token)
+	return nil
 }

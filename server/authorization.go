@@ -77,7 +77,6 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 
 func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
-	log.Println("[oauthprovider] IssueAccessToken => grantype: ", grantType)
 
 	if grantType == "" {
 		return "", util.NewInvalidRequestError(grantType)
