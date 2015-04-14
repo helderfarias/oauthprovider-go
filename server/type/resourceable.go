@@ -1,9 +1,10 @@
 package servertype
 
 import (
-	"github.com/helderfarias/oauthprovider-go/http"
+    "github.com/helderfarias/oauthprovider-go/http"
+    "github.com/helderfarias/oauthprovider-go/model"
 )
 
 type Resourceable interface {
-	ValidateRequest(request http.Request) error
+    ValidateRequest(request http.Request) (*model.AccessToken, error)
 }

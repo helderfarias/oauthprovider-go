@@ -2,6 +2,7 @@ package server
 
 import (
     "github.com/helderfarias/oauthprovider-go/http"
+    "github.com/helderfarias/oauthprovider-go/model"
     "github.com/helderfarias/oauthprovider-go/storage"
     "github.com/helderfarias/oauthprovider-go/token"
     "github.com/helderfarias/oauthprovider-go/util"
@@ -17,26 +18,26 @@ func NewResourceServer() *ResourceServer {
     return &ResourceServer{}
 }
 
-func (r *ResourceServer) ValidateRequest(request http.Request) error {
+func (r *ResourceServer) ValidateRequest(request http.Request) (*model.AccessToken, error) {
     authzHeader := request.GetHeader(util.AUTHORIZATION)
 
     if authzHeader == "" {
-        return util.NewInvalidRequestError(util.OAUTH_ACCESS_TOKEN)
+        return nil, util.NewInvalidRequestError(util.OAUTH_ACCESS_TOKEN)
     }
 
     token := r.TokenType.GetAccessTokenInHeader(request)
     if token == "" {
-        return util.NewAccessDeniedError()
+        return nil, util.NewAccessDeniedError()
     }
 
     accessToken := r.AccessTokenStorage.FindById(token)
     if accessToken == nil {
-        return util.NewAccessDeniedError()
+        return nil, util.NewAccessDeniedError()
     }
 
     if !accessToken.Valid() {
-        return util.NewAccessDeniedError()
+        return nil, util.NewAccessDeniedError()
     }
 
-    return nil
+    return accessToken, nil
 }
