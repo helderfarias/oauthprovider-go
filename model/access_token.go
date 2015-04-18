@@ -26,7 +26,9 @@ func (a *AccessToken) Expired() bool {
         return false
     }
 
-    return time.Now().After(a.ExpiresAt)
+    utcNow := time.Now()
+    utcNow = time.Date(utcNow.Year(), utcNow.Month(), utcNow.Day(), utcNow.Hour(), utcNow.Minute(), utcNow.Second(), utcNow.Nanosecond(), time.UTC)
+    return utcNow.After(a.ExpiresAt)
 }
 
 func (a *AccessToken) Valid() bool {
