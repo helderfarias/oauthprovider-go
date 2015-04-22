@@ -18,6 +18,21 @@ func NewResourceServer() *ResourceServer {
     return &ResourceServer{}
 }
 
+func (r *ResourceServer) GetAccessToken(request http.Request) (string, error) {
+    authzHeader := request.GetHeader(util.AUTHORIZATION)
+
+    if authzHeader == "" {
+        return "", util.NewInvalidRequestError(util.OAUTH_ACCESS_TOKEN)
+    }
+
+    token := r.TokenType.GetAccessTokenInHeader(request)
+    if token == "" {
+        return "", util.NewAccessDeniedError()
+    }
+
+    return token, nil
+}
+
 func (r *ResourceServer) ValidateRequest(request http.Request) (*model.AccessToken, error) {
     authzHeader := request.GetHeader(util.AUTHORIZATION)
 
