@@ -63,7 +63,12 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidCredentialsError()
 	}
 
-	accessToken, err := p.createAccessToken(client, user)
+	scopes, err := p.server.CheckScope(request, client.Name)
+	if err != nil {
+		return nil, util.NewOAuthRuntimeError()
+	}
+
+	accessToken, err := p.createAccessToken(client, user, scopes)
 	if err != nil {
 		return nil, util.NewOAuthRuntimeError()
 	}
@@ -76,7 +81,7 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 	return p.server.CreateResponse(accessToken, refreshToken), nil
 }
 
-func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User) (*model.AccessToken, error) {
+func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User, scopes []string) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
 	accessToken.Token = p.server.IssuerAccessToken()

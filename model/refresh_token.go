@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/helderfarias/oauthprovider-go/util"
 	"time"
 )
 
@@ -15,14 +14,14 @@ type RefreshToken struct {
 	AccessToken *AccessToken
 }
 
-func (a *RefreshToken) Expired() bool {
+func (a *RefreshToken) Expired(seconds int) bool {
 	if a.ExpiresAt.IsZero() {
 		return false
 	}
 
-	return a.ExpiresAt.Add(-util.ACCESS_TOKEN_VALIDITY_SECONDS).Before(time.Now())
+	return a.ExpiresAt.Add(-1 * time.Duration(seconds)).Before(time.Now())
 }
 
-func (a *RefreshToken) Valid() bool {
-	return a.Token != "" && !a.Expired()
+func (a *RefreshToken) Valid(seconds int) bool {
+	return a.Token != "" && !a.Expired(seconds)
 }

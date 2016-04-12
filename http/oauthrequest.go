@@ -12,6 +12,18 @@ type OAuthRequest struct {
 	HttpRequest *http.Request
 }
 
+func (this *OAuthRequest) GetScopes() []string {
+	scopes := []string{}
+
+	if values := this.GetParam(util.OAUTH_SCOPE); len(values) > 0 {
+		for _, scope := range strings.Split(values, " ") {
+			scopes = append(scopes, scope)
+		}
+	}
+
+	return scopes
+}
+
 func (o *OAuthRequest) GetParam(key string) string {
 	return o.HttpRequest.PostFormValue(key)
 }

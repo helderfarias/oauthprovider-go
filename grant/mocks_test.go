@@ -71,6 +71,10 @@ func (o *StubOAuthRequest) GetRevokeToken() string {
 	return ""
 }
 
+func (o *StubOAuthRequest) GetScopes() []string {
+	return []string{}
+}
+
 func (v *FakeCredentialsCallback) Find(userName, password string) *model.User {
 	return v.user
 }
@@ -107,4 +111,23 @@ func (f *FakeServer) FindRefreshTokenById(refreshToken string) *model.RefreshTok
 
 func (f *FakeServer) DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error {
 	return nil
+}
+
+func (a *FakeServer) FindScope(scope, clientId string) (*model.Scope, error) {
+	return nil, nil
+}
+
+func (a *FakeServer) IsScopeRequired() bool {
+	return false
+}
+
+func (a *FakeServer) SetScopeRequired(value bool) {
+}
+
+func (a *FakeServer) GetDefaultScope() string {
+	return ""
+}
+
+func (a *FakeServer) CheckScope(request http.Request, clientId string) ([]string, error) {
+	return []string{}, nil
 }

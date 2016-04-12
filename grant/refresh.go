@@ -6,6 +6,7 @@ import (
 	"github.com/helderfarias/oauthprovider-go/logger"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
@@ -58,7 +59,7 @@ func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message
 		return nil, util.NewInvalidRefreshError()
 	}
 
-	if oldRefreshToken.Expired() {
+	if oldRefreshToken.Expired(token.REFRESH_TOKEN_VALIDITY_SECONDS) {
 		return nil, util.NewInvalidRefreshError()
 	}
 

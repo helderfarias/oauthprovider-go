@@ -57,6 +57,10 @@ func (o *OAuthRequestFake) GetClientSecret() string {
 	return ""
 }
 
+func (o *OAuthRequestFake) GetScopes() []string {
+	return []string{}
+}
+
 func (o *OAuthRequestFake) GetUserName() string {
 	return ""
 }

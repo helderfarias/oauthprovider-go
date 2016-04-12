@@ -31,3 +31,7 @@ type RefreshTokenStorage interface {
 
 	DeleteByAccessToken(AccessToken *model.AccessToken) error
 }
+
+type ScopeStorage interface {
+	Find(scope, clientId string) (*model.Scope, error)
+}

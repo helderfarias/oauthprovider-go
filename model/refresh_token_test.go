@@ -9,5 +9,5 @@ func TestCreateRefreshToken(t *testing.T) {
 	token := &RefreshToken{}
 	token.ExpiresAt = createDate(2592000)
 
-	assert.Equal(t, false, token.Expired())
+	assert.Equal(t, false, token.Expired(0))
 }

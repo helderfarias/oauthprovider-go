@@ -8,6 +8,8 @@ import (
 )
 
 type Authorizable interface {
+	FindScope(scope, clientId string) (*model.Scope, error)
+
 	FindByCredencials(clientId, clientSecret string) *model.Client
 
 	FindRefreshTokenById(refreshToken string) *model.RefreshToken
@@ -29,4 +31,12 @@ type Authorizable interface {
 	HasGrantType(identified string) bool
 
 	CreateResponse(accessToken *model.AccessToken, refreshToken *model.RefreshToken) encode.Message
+
+	CheckScope(request http.Request, clientId string) ([]string, error)
+
+	IsScopeRequired() bool
+
+	SetScopeRequired(value bool)
+
+	GetDefaultScope() string
 }

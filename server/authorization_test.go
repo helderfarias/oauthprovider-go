@@ -24,6 +24,10 @@ func (o *OAuthRequestFake) GetParam(key string) string {
 	return o.param
 }
 
+func (o *OAuthRequestFake) GetScopes() []string {
+	return []string{}
+}
+
 func (o *OAuthRequestFake) GetHeader(authorization string) string {
 	return ""
 }
@@ -74,6 +78,21 @@ func (o *GrantTypeFake) HandleResponse(request http.Request) (encode.Message, er
 
 func (g *GrantTypeFake) SetServer(origin servertype.Authorizable) {
 	g.server = origin
+}
+
+func (g *GrantTypeFake) CheckScope(request http.Request, clientId string) ([]string, error) {
+	return []string{}, nil
+}
+
+func (g *GrantTypeFake) isScopeRequired() bool {
+	return false
+}
+
+func (g *GrantTypeFake) setScopeRequired(value bool) {
+}
+
+func (g *GrantTypeFake) getDefaultScope() string {
+	return ""
 }
 
 func TestShouldBeAddGrantType(t *testing.T) {
