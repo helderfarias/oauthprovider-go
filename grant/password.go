@@ -65,7 +65,7 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 
 	scopes, err := p.server.CheckScope(request, client.Name)
 	if err != nil {
-		return nil, util.NewOAuthRuntimeError()
+		return nil, util.NewInvalidScopeError()
 	}
 
 	accessToken, err := p.createAccessToken(client, user, scopes)

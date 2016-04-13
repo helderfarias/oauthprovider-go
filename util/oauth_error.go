@@ -15,6 +15,14 @@ type OAuthError struct {
 	ErrorType  string
 }
 
+func NewInvalidScopeError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 400,
+		GrantType:  "invalid_request",
+		ErrorType:  "Scope not found.",
+	}
+}
+
 func NewInvalidAccessTokenError() *OAuthError {
 	return &OAuthError{
 		StatusCode: 400,
