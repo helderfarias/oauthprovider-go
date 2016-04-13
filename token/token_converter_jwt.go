@@ -20,7 +20,11 @@ func (this *TokenConverterJwt) AccessToken() string {
 
 	tokenHandler := jwt.New(jwt.SigningMethodES512)
 
-	tokenHandler.Claims = this.PayloadHandler()
+	for key, value := range this.PayloadHandler() {
+		tokenHandler.Claims[key] = value
+	}
+
+	tokenHandler.Claims["exp"] = this.expiresAtInMilliseconds()
 
 	token, err := tokenHandler.SignedString(ecdsaKey)
 	if err != nil {
@@ -46,4 +50,14 @@ func (o *TokenConverterJwt) calculateExpiryTime(daysInSeconds int) time.Time {
 	expiresAt := time.Now()
 	expiresAt = expiresAt.Add(time.Duration(daysInSeconds) * time.Second)
 	return expiresAt
+}
+
+func (a *TokenConverterJwt) expiresAtInMilliseconds() int64 {
+	expiresAt := a.CreateExpireTimeForAccessToken()
+
+	if expiresAt.IsZero() {
+		return 0
+	}
+
+	return expiresAt.UnixNano() / int64(time.Millisecond)
 }

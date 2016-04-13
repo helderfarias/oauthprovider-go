@@ -1,6 +1,7 @@
 package token
 
 import (
+	"encoding/base64"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -24,6 +25,10 @@ gLZa91Qs1pQIaz2DpAF+CRkajVGLsPKBi6hM8CsrLgEx85Mbe63mxg+L5NzSwKQb
 7bBV2ihqbwdqOORmUgYzKVSWLzS2fyN5uIa7BlW4Iw==
 -----END EC PRIVATE KEY-----	
 	`
+
+	PUBLIC_KEY_BASE64 = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0NCk1JR2JNQkFHQnlxR1NNNDlBZ0VHQlN1QkJBQWpBNEdHQUFRQjBxaDY4VHpSSHBrT3F6WVJxSjVmY0FDMW51bWYNCmM2Ky9OemlPb0dDckV6c0JvWUZJUzNuWERNbElTYUdkbWE3VGtkdzBpNEMyV3ZkVUxOYVVDR3M5ZzZRQmZna1oNCkdvMVJpN0R5Z1l1b1RQQXJLeTRCTWZPVEczdXQ1c1lQaStUYzBzQ2tHKzJ3VmRvb2FtOEhhamprWmxJR015bFUNCmxpODB0bjhqZWJpR3V3WlZ1Q009DQotLS0tLUVORCBQVUJMSUMgS0VZLS0tLS0J"
+
+	PRIVATE_KEY_BASE64 = "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tDQpNSUhjQWdFQkJFSUJlaWpOUmd0ejlqVFVOeHR2TFFoVi9hOEFmbTFOSFh5YmJzTWhQeTRNYzBMZVN0MmhlMkw0DQpZRHRtOHljUi95cDY3MVM1K3hZTlF0MTQya1FLelBvOGtmT2dCd1lGSzRFRUFDT2hnWWtEZ1lZQUJBSFNxSHJ4DQpQTkVlbVE2ck5oR29ubDl3QUxXZTZaOXpyNzgzT0k2Z1lLc1RPd0doZ1VoTGVkY015VWhKb1oyWnJ0T1IzRFNMDQpnTFphOTFRczFwUUlhejJEcEFGK0NSa2FqVkdMc1BLQmk2aE04Q3NyTGdFeDg1TWJlNjNteGcrTDVOelN3S1FiDQo3YkJWMmlocWJ3ZHFPT1JtVWdZektWU1dMelMyZnlONXVJYTdCbFc0SXc9PQ0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQ=="
 )
 
 func TestShouldBeCreateInstanceJwtToken(t *testing.T) {
@@ -35,9 +40,11 @@ func TestShouldBeCreateInstanceJwtToken(t *testing.T) {
 }
 
 func TestShouldBeCreateJwtToken(t *testing.T) {
+	data, _ := base64.StdEncoding.DecodeString(PRIVATE_KEY_BASE64)
+
 	converter := &TokenConverterJwt{
 		ExpiryTimeInSecondsForAccessToken: ACCESS_TOKEN_VALIDITY_SECONDS,
-		PrivateKey:                        []byte(PRIVATE_KEY),
+		PrivateKey:                        []byte(data),
 		PayloadHandler: func() map[string]interface{} {
 			payload := map[string]interface{}{}
 			payload["login"] = "login"
