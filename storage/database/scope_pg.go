@@ -1,9 +1,7 @@
-package memory
+package database
 
 import (
-	"errors"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"sync"
 )
 
 type PostgresScopeStorage struct {

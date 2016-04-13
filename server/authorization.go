@@ -59,6 +59,10 @@ func (a *AuthorizationServer) CheckScope(request http.Request, clientId string) 
 }
 
 func (a *AuthorizationServer) HasGrantType(identified string) bool {
+	if a.grants[identified] == nil {
+		return false
+	}
+
 	return a.grants[identified].Identifier() != ""
 }
 
