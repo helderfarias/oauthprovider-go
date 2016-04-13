@@ -1,22 +1,37 @@
 package token
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type TokenConverterJwt struct {
-	ExpiryTimeInSecondsForAccessToken  int
-	ExpiryTimeInSecondsForRefreshToken int
+	ExpiryTimeInSecondsForAccessToken int
+	PayloadHandler                    func() map[string]interface{}
+	PrivateKey                        []byte
 }
 
-func (o *TokenConverterJwt) AccessToken() string {
-	return o.generateValue()
+func (this *TokenConverterJwt) AccessToken() string {
+	ecdsaKey, err := jwt.ParseECPrivateKeyFromPEM(this.PrivateKey)
+	if err != nil {
+		panic(err)
+	}
+
+	tokenHandler := jwt.New(jwt.SigningMethodES512)
+
+	tokenHandler.Claims = this.PayloadHandler()
+
+	token, err := tokenHandler.SignedString(ecdsaKey)
+	if err != nil {
+		panic(err)
+	}
+
+	return token
 }
 
 func (o *TokenConverterJwt) RefreshToken() string {
-	return o.generateValue()
+	return ""
 }
 
 func (o *TokenConverterJwt) CreateExpireTimeForAccessToken() time.Time {
@@ -24,17 +39,7 @@ func (o *TokenConverterJwt) CreateExpireTimeForAccessToken() time.Time {
 }
 
 func (o *TokenConverterJwt) CreateExpireTimeForRefreshToken() time.Time {
-	return o.calculateExpiryTime(o.ExpiryTimeInSecondsForRefreshToken)
-}
-
-func (o *TokenConverterJwt) generateValue() string {
-	b := make([]byte, 16)
-
-	if _, err := rand.Read(b); err != nil {
-		return ""
-	}
-
-	return hex.EncodeToString(b)
+	return o.calculateExpiryTime(0)
 }
 
 func (o *TokenConverterJwt) calculateExpiryTime(daysInSeconds int) time.Time {
