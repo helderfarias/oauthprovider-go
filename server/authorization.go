@@ -190,7 +190,7 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 	}
 
 	if grantType == util.OAUTH_AUTHORIZATION_CODE {
-		_, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
+		_, err := url.QueryUnescape(request.GetParam(util.OAUTH_REDIRECT_URI))
 		if err != nil {
 			Logger.Debug("Redirect Uri not found %s", err)
 			return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
@@ -213,7 +213,7 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 	token := message.Encode()
 
 	if grantType == util.OAUTH_AUTHORIZATION_CODE {
-		uri := request.GetParamUri(util.OAUTH_REDIRECT_URI)
+		uri := request.GetParam(util.OAUTH_REDIRECT_URI)
 		response.RedirectUri(fmt.Sprintf("%s?token=%s", uri, token))
 		return token, nil
 	}
