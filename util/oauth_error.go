@@ -18,8 +18,8 @@ type OAuthError struct {
 func NewInvalidScopeError() *OAuthError {
 	return &OAuthError{
 		StatusCode: 400,
-		GrantType:  "invalid_request",
-		ErrorType:  "Scope not found.",
+		GrantType:  "invalid_scope",
+		ErrorType:  "The requested scope is invalid, unknown, or malformed.",
 	}
 }
 
@@ -31,10 +31,18 @@ func NewInvalidAccessTokenError() *OAuthError {
 	}
 }
 
-func NewInvalidRequestError(grantType string) *OAuthError {
+func NewUnauthorizedClientError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 400,
+		GrantType:  "unauthorized_client",
+		ErrorType:  "The client is not authorized to request a token using this method.",
+	}
+}
+
+func NewInvalidRequestError(value string) *OAuthError {
 	message := fmt.Sprintf("The request is missing a required parameter,"+
 		" includes an invalid parameter value, includes a parameter more than once, "+
-		"or is otherwise malformed. Check the '%s' parameter.", grantType)
+		"or is otherwise malformed. Check the '%s' parameter.", value)
 
 	return &OAuthError{
 		StatusCode: 400,

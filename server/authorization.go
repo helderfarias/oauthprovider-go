@@ -1,6 +1,11 @@
 package server
 
 import (
+	"fmt"
+	"log"
+	"net/url"
+	"time"
+
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
@@ -9,26 +14,27 @@ import (
 	"github.com/helderfarias/oauthprovider-go/storage"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
-	"log"
-	"time"
 )
 
 //Authorization Server for OAuth2
 type AuthorizationServer struct {
 	grants              map[string]grant.GrantType
+	scopeRequired       bool
+	defaultScope        string
 	TokenType           token.TokenType
 	ClientStorage       storage.ClientStorage
 	AccessTokenStorage  storage.AccessTokenStorage
 	RefreshTokenStorage storage.RefreshTokenStorage
 	ScopeStorage        storage.ScopeStorage
+	AuthzCodeStorage    storage.AuthzCodeStorage
 	TokenConverter      token.TokenConverter
-	scopeRequired       bool
-	defaultScope        string
+	AuthorizeToken      token.AuthorizeToken
 }
 
 func NewAuthorizationServer() *AuthorizationServer {
 	return &AuthorizationServer{
-		grants: make(map[string]grant.GrantType),
+		grants:         make(map[string]grant.GrantType),
+		AuthorizeToken: &token.AuthorizeTokenGenerator{},
 		TokenConverter: &token.TokenConverterDefault{
 			ExpiryTimeInSecondsForAccessToken:  token.ACCESS_TOKEN_VALIDITY_SECONDS,
 			ExpiryTimeInSecondsForRefreshToken: token.REFRESH_TOKEN_VALIDITY_SECONDS,
@@ -75,6 +81,10 @@ func (a *AuthorizationServer) CreateResponse(accessToken *model.AccessToken, ref
 	return a.TokenType.CreateResponse(accessToken, refreshToken)
 }
 
+func (a *AuthorizationServer) FindClientById(clientId string) *model.Client {
+	return a.ClientStorage.FindById(clientId)
+}
+
 func (a *AuthorizationServer) FindByCredencials(clientId, clientSecret string) *model.Client {
 	return a.ClientStorage.FindByCredencials(clientId, clientSecret)
 }
@@ -83,7 +93,7 @@ func (a *AuthorizationServer) FindRefreshTokenById(refreshToken string) *model.R
 	return a.RefreshTokenStorage.FindById(refreshToken)
 }
 
-func (a *AuthorizationServer) IssuerAccessToken() string {
+func (a *AuthorizationServer) CreateToken() string {
 	return a.TokenConverter.AccessToken()
 }
 
@@ -112,7 +122,53 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 	return a.AccessTokenStorage.Delete(accessToken)
 }
 
-func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, error) {
+//Issue authorize code
+func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
+	reponseType := request.GetParam(util.OAUTH_RESPONSE_TYPE)
+	if reponseType == "" {
+		return "", util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
+	}
+
+	clientId := request.GetParam(util.OAUTH_CLIENT_ID)
+	if clientId == "" {
+		return "", util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
+	}
+
+	redirectUri, err := url.QueryUnescape(request.GetParam(util.OAUTH_REDIRECT_URI))
+	if err != nil {
+		return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
+	}
+
+	client := this.FindClientById(clientId)
+	if client == nil {
+		return "", util.NewInvalidClientError()
+	}
+
+	if client.RedirectUri == "" {
+		return "", util.NewUnauthorizedClientError()
+	}
+
+	_, err = this.CheckScope(request, clientId)
+	if err != nil {
+		return "", util.NewInvalidScopeError()
+	}
+
+	authzCode, err := this.AuthorizeToken.GenerateCode()
+	if err != nil {
+		return "", util.NewOAuthRuntimeError()
+	}
+
+	err = this.AuthzCodeStorage.Save(&model.AuthzCode{Code: authzCode, ClientId: clientId})
+	if err != nil {
+		return "", util.NewOAuthRuntimeError()
+	}
+
+	response.RedirectUri(fmt.Sprintf("%s?code=%s", redirectUri, authzCode))
+	return "", nil
+}
+
+//Issue token
+func (a *AuthorizationServer) HandlerAccessToken(request http.Request) (string, error) {
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
 
 	if grantType == "" {
@@ -135,7 +191,8 @@ func (a *AuthorizationServer) IssueAccessToken(request http.Request) (string, er
 	return message.Encode(), nil
 }
 
-func (a *AuthorizationServer) RevokeToken(request http.Request) error {
+//Revoke token
+func (a *AuthorizationServer) HandlerRevokeToken(request http.Request) error {
 	token := request.GetRevokeToken()
 	if token == "" {
 		return util.NewInvalidRequestError(util.OAUTH_REVOKE_TOKEN)

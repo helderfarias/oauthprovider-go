@@ -9,6 +9,7 @@ type Client struct {
 	Name         string
 	Secret       string
 	Status       int
+	RedirectUri  string
 	lastLockAt   time.Time
 	lastUnlockAt time.Time
 }

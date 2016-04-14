@@ -35,3 +35,9 @@ type RefreshTokenStorage interface {
 type ScopeStorage interface {
 	Find(scope, clientId string) (*model.Scope, error)
 }
+
+type AuthzCodeStorage interface {
+	Find(code, clientId string) (*model.AuthzCode, error)
+
+	Save(entity *model.AuthzCode) error
+}

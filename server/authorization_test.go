@@ -112,7 +112,7 @@ func TestErrorIfGrantTypeEmptyWhenGetAccessToken(t *testing.T) {
 
 	server.AddGrant(grant)
 
-	_, err := server.IssueAccessToken(req)
+	_, err := server.HandlerAccessToken(req)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, err.(*util.OAuthError).GrantType, "invalid_request")
@@ -125,7 +125,7 @@ func TestErrorIfGrantTypeUnknownWhenGetAccessToken(t *testing.T) {
 
 	server.AddGrant(grant)
 
-	_, err := server.IssueAccessToken(req)
+	_, err := server.HandlerAccessToken(req)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, err.(*util.OAuthError).GrantType, "unsupported_grant_type")
@@ -138,7 +138,7 @@ func TestCreateTokenValid(t *testing.T) {
 
 	server.AddGrant(grant)
 
-	token, err := server.IssueAccessToken(req)
+	token, err := server.HandlerAccessToken(req)
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, token, "message")

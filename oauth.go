@@ -19,6 +19,7 @@ func (o *OAuthServer) AuthorizationServer() *server.AuthorizationServer {
 	newServer.RefreshTokenStorage = &memory.MemoryRefreshTokenStorage{}
 	newServer.ClientStorage = &memory.MemoryClientStorage{}
 	newServer.ScopeStorage = &memory.MemoryScopeStorage{}
+	newServer.AuthzCodeStorage = &memory.MemoryAuthzCodeStorage{}
 	newServer.TokenType = &token.BearerTokenType{}
 	return newServer
 }

@@ -10,13 +10,13 @@ import (
 type Authorizable interface {
 	FindScope(scope, clientId string) (*model.Scope, error)
 
+	FindClientById(clientId string) *model.Client
+
 	FindByCredencials(clientId, clientSecret string) *model.Client
 
 	FindRefreshTokenById(refreshToken string) *model.RefreshToken
 
-	IssuerAccessToken() string
-
-	RevokeToken(request http.Request) error
+	CreateToken() string
 
 	DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error
 
@@ -39,4 +39,10 @@ type Authorizable interface {
 	SetScopeRequired(value bool)
 
 	GetDefaultScope() string
+
+	HandlerAuthorize(request http.Request, response http.Response) (string, error)
+
+	HandlerAccessToken(request http.Request) (string, error)
+
+	HandlerRevokeToken(request http.Request) error
 }

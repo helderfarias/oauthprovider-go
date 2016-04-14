@@ -18,4 +18,6 @@ const (
 	OAUTH_BEARER_TOKEN       = "access_token"
 	OAUTH_CLIENT_CREDENTIALS = "client_credentials"
 	AUTHORIZATION            = "Authorization"
+	OAUTH_RESPONSE_TYPE      = "response_type"
+	OAUTH_REDIRECT_URI       = "redirect_uri"
 )

@@ -87,7 +87,7 @@ func (f *FakeServer) CreateResponse(accessToken *model.AccessToken, refreshToken
 	return &encode.OAuthMessage{AccessToken: "token00", TokenType: "Bearer", ExpiresIn: 3600}
 }
 
-func (f *FakeServer) IssuerAccessToken() string {
+func (f *FakeServer) CreateToken() string {
 	return ""
 }
 
@@ -105,7 +105,7 @@ func (f *FakeServer) StoreRefreshToken(refreshToken *model.RefreshToken) error {
 
 func (f *FakeServer) HasGrantType(identified string) bool { return false }
 
-func (f *FakeServer) RevokeToken(request http.Request) error { return nil }
+func (f *FakeServer) HandlerRevokeToken(request http.Request) error { return nil }
 
 func (f *FakeServer) FindRefreshTokenById(refreshToken string) *model.RefreshToken { return nil }
 
@@ -121,6 +121,10 @@ func (a *FakeServer) IsScopeRequired() bool {
 	return false
 }
 
+func (f *FakeServer) FindClientById(clientId string) *model.Client {
+	return nil
+}
+
 func (a *FakeServer) SetScopeRequired(value bool) {
 }
 
@@ -130,4 +134,13 @@ func (a *FakeServer) GetDefaultScope() string {
 
 func (a *FakeServer) CheckScope(request http.Request, clientId string) ([]string, error) {
 	return []string{}, nil
+}
+
+func (f *FakeServer) HandlerAccessToken(request http.Request) (string, error) {
+	return "", nil
+}
+
+func (f *FakeServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
+	return "", nil
+
 }
