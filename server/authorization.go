@@ -82,6 +82,10 @@ func (a *AuthorizationServer) CreateResponse(accessToken *model.AccessToken, ref
 	return a.TokenType.CreateResponse(accessToken, refreshToken)
 }
 
+func (a *AuthorizationServer) FindAuthzCode(code, clientId string) (*model.AuthzCode, error) {
+	return a.AuthzCodeStorage.Find(code, clientId)
+}
+
 func (a *AuthorizationServer) FindClientById(clientId string) *model.Client {
 	return a.ClientStorage.FindById(clientId)
 }

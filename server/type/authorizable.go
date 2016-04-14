@@ -8,6 +8,8 @@ import (
 )
 
 type Authorizable interface {
+	FindAuthzCode(code, clientId string) (*model.AuthzCode, error)
+
 	FindScope(scope, clientId string) (*model.Scope, error)
 
 	FindClientById(clientId string) *model.Client

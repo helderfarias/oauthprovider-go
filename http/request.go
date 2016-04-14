@@ -21,6 +21,8 @@ type Request interface {
 
 	GetAuthorizationBasic() []string
 
+	GetAuthorizationCode() string
+
 	GetRevokeToken() string
 
 	GetScopes() []string

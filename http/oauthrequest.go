@@ -28,6 +28,10 @@ func (this *OAuthRequest) GetScopes() []string {
 	return scopes
 }
 
+func (o *OAuthRequest) GetAuthorizationCode() string {
+	return o.GetParam(util.OAUTH_AUTHORIZATION_CODE)
+}
+
 func (o *OAuthRequest) GetParam(key string) string {
 	return o.HttpRequest.PostFormValue(key)
 }

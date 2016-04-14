@@ -71,6 +71,10 @@ func (o *StubOAuthRequest) GetAuthorizationBasic() []string {
 	return o.authz
 }
 
+func (s *StubOAuthRequest) GetAuthorizationCode() string {
+	return ""
+}
+
 func (o *StubOAuthRequest) GetRevokeToken() string {
 	return ""
 }
@@ -101,6 +105,10 @@ func (f *FakeServer) IssuerExpireTimeForAccessToken() time.Time {
 
 func (f *FakeServer) IssuerExpireTimeForRefreshToken() time.Time {
 	return time.Time{}
+}
+
+func (f *FakeServer) FindAuthzCode(code, clientId string) (*model.AuthzCode, error) {
+	return nil, nil
 }
 
 func (f *FakeServer) StoreAccessToken(accessToken *model.AccessToken) error { return nil }

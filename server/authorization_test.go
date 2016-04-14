@@ -35,6 +35,10 @@ func (o *OAuthRequestFake) GetParam(key string) string {
 	return o.param
 }
 
+func (o *OAuthRequestFake) GetAuthorizationCode() string {
+	return o.param
+}
+
 func (o *OAuthRequestFake) GetParamUri(key string) string {
 	return o.paramsUri[key]
 }
