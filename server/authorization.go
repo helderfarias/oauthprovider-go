@@ -124,17 +124,17 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 
 //Issue authorize code
 func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
-	reponseType := request.GetParam(util.OAUTH_RESPONSE_TYPE)
+	reponseType := request.GetParamUri(util.OAUTH_RESPONSE_TYPE)
 	if reponseType == "" {
 		return "", util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
 	}
 
-	clientId := request.GetParam(util.OAUTH_CLIENT_ID)
+	clientId := request.GetParamUri(util.OAUTH_CLIENT_ID)
 	if clientId == "" {
 		return "", util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
 	}
 
-	redirectUri, err := url.QueryUnescape(request.GetParam(util.OAUTH_REDIRECT_URI))
+	redirectUri, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
 	if err != nil {
 		return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
 	}
