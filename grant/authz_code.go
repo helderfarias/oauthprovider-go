@@ -21,16 +21,6 @@ func (p *AuthzCodeGrant) Identifier() string {
 }
 
 func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, error) {
-	clientId := request.GetClientId()
-	if clientId == "" {
-		return nil, util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
-	}
-
-	clientSecret := request.GetClientSecret()
-	if clientSecret == "" {
-		return nil, util.NewInvalidRequestError(util.OAUTH_CLIENT_SECRET)
-	}
-
 	authorization := request.GetAuthorizationBasic()
 	if authorization == nil ||
 		authorization[0] == "" ||
@@ -38,9 +28,8 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		return nil, util.NewBadCredentialsError()
 	}
 
-	if clientId != authorization[0] && clientSecret != authorization[1] {
-		return nil, util.NewBadCredentialsError()
-	}
+	clientId := authorization[0]
+	clientSecret := authorization[1]
 
 	client := p.server.FindByCredencials(clientId, clientSecret)
 	if client == nil {
