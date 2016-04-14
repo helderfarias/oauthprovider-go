@@ -17,7 +17,7 @@ func (p *AuthzCodeGrant) SetServer(server servertype.Authorizable) {
 }
 
 func (p *AuthzCodeGrant) Identifier() string {
-	return util.OAUTH_PASSWORD
+	return util.OAUTH_AUTHORIZATION_CODE
 }
 
 func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, error) {
