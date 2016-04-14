@@ -3,6 +3,7 @@ package grant
 import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
+	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/util"
@@ -33,26 +34,31 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 
 	client := p.server.FindByCredencials(clientId, clientSecret)
 	if client == nil {
+		Logger.Debug("Client not found: %s, %s", clientId, clientSecret)
 		return nil, util.NewInvalidClientError()
 	}
 
 	code := request.GetAuthorizationCode()
 	if code == "" {
+		Logger.Debug("Authorization Code not found: %s", code)
 		return nil, util.NewInvalidRequestError(util.OAUTH_AUTHORIZATION_CODE)
 	}
 
 	_, err := p.server.FindAuthzCode(code, clientId)
 	if err != nil {
+		Logger.Error("Authorization Code not found in storage: %s", err)
 		return nil, util.NewInvalidRequestError(util.OAUTH_AUTHORIZATION_CODE)
 	}
 
 	accessToken, err := p.createAccessToken(client)
 	if err != nil {
+		Logger.Error("Error on create token: %s", err)
 		return nil, util.NewOAuthRuntimeError()
 	}
 
 	refreshToken, err := p.createRefreshToken(client, accessToken)
 	if err != nil {
+		Logger.Error("Error on create refresh: %s", err)
 		return nil, util.NewOAuthRuntimeError()
 	}
 

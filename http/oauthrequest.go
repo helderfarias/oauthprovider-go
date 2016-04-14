@@ -2,8 +2,9 @@ package http
 
 import (
 	"encoding/base64"
+	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/util"
-	"log"
+
 	"net/http"
 	"strings"
 )
@@ -104,7 +105,7 @@ func (o *OAuthRequest) decodeHeader(header string) []string {
 	if encode := tokens[1]; encode != "" {
 		bytes, err := base64.StdEncoding.DecodeString(encode)
 		if err != nil {
-			log.Println(err)
+			Logger.Warn("%s", err)
 			return nil
 		}
 

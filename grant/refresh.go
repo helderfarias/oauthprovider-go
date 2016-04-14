@@ -3,7 +3,7 @@ package grant
 import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
-	"github.com/helderfarias/oauthprovider-go/logger"
+	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/token"
@@ -63,7 +63,7 @@ func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message
 		return nil, util.NewInvalidRefreshError()
 	}
 
-	logger.Info("%s", oldRefreshToken)
+	Logger.Info("%s", oldRefreshToken)
 
 	p.server.DeleteTokens(oldRefreshToken, oldRefreshToken.AccessToken)
 

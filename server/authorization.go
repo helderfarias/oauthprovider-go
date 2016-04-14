@@ -1,8 +1,8 @@
 package server
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 	"time"
@@ -10,6 +10,7 @@ import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
+	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/scope"
 	"github.com/helderfarias/oauthprovider-go/storage"
@@ -184,12 +185,14 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
 
 	if grantType == "" {
+		Logger.Debug("GrantType not found %s", grantType)
 		return "", util.NewInvalidRequestError(grantType)
 	}
 
 	if grantType == util.OAUTH_AUTHORIZATION_CODE {
 		_, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
 		if err != nil {
+			Logger.Debug("Redirect Uri not found %s", err)
 			return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
 		}
 	}
@@ -204,7 +207,7 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 	}
 
 	if message == nil {
-		log.Panicln("Handler Response not initialize")
+		return "", errors.New("Handler Response not initialize")
 	}
 
 	token := message.Encode()
