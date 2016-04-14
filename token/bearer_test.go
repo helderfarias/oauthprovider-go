@@ -69,6 +69,10 @@ func (o *OAuthRequestFake) GetPassword() string {
 	return ""
 }
 
+func (o *OAuthRequestFake) GetParamUri(key string) string {
+	return ""
+}
+
 func (o *OAuthRequestFake) GetGrantType() string {
 	return ""
 }

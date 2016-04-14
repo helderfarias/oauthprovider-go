@@ -1,6 +1,8 @@
 package http
 
 type Request interface {
+	GetParamUri(key string) string
+
 	GetParam(key string) string
 
 	GetHeader(key string) string

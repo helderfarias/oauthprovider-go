@@ -35,6 +35,10 @@ func (o *StubOAuthRequest) GetParam(key string) string {
 	return o.param[key]
 }
 
+func (o *StubOAuthRequest) GetParamUri(key string) string {
+	return o.param[key]
+}
+
 func (o *StubOAuthRequest) GetHeader(authorization string) string {
 	return ""
 }

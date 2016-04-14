@@ -12,6 +12,10 @@ type OAuthRequest struct {
 	HttpRequest *http.Request
 }
 
+func (o *OAuthRequest) GetParamUri(key string) string {
+	return o.HttpRequest.URL.Query().Get(key)
+}
+
 func (this *OAuthRequest) GetScopes() []string {
 	scopes := []string{}
 

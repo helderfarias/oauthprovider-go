@@ -24,6 +24,10 @@ func (o *OAuthRequestFake) GetParam(key string) string {
 	return o.param
 }
 
+func (o *OAuthRequestFake) GetParamUri(key string) string {
+	return o.param
+}
+
 func (o *OAuthRequestFake) GetScopes() []string {
 	return []string{}
 }
