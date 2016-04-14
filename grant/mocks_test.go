@@ -12,6 +12,11 @@ type StubOAuthRequest struct {
 	authz []string
 }
 
+type StubOAuthResponse struct {
+	param map[string]string
+	authz []string
+}
+
 type FakeMessage struct {
 }
 
@@ -27,8 +32,15 @@ func NewRequest() *StubOAuthRequest {
 	return &StubOAuthRequest{param: make(map[string]string), authz: make([]string, 0)}
 }
 
+func NewResponse() *StubOAuthResponse {
+	return &StubOAuthResponse{param: make(map[string]string), authz: make([]string, 0)}
+}
+
 func NewServer() *FakeServer {
 	return &FakeServer{credencials: &model.Client{}}
+}
+
+func (o *StubOAuthResponse) RedirectUri(uri string) {
 }
 
 func (o *StubOAuthRequest) GetParam(key string) string {
@@ -117,7 +129,9 @@ func (f *FakeServer) StoreRefreshToken(refreshToken *model.RefreshToken) error {
 
 func (f *FakeServer) HasGrantType(identified string) bool { return false }
 
-func (f *FakeServer) HandlerRevokeToken(request http.Request) error { return nil }
+func (f *FakeServer) HandlerRevokeToken(request http.Request, response http.Response) error {
+	return nil
+}
 
 func (f *FakeServer) FindRefreshTokenById(refreshToken string) *model.RefreshToken { return nil }
 
@@ -148,7 +162,7 @@ func (a *FakeServer) CheckScope(request http.Request, clientId string) ([]string
 	return []string{}, nil
 }
 
-func (f *FakeServer) HandlerAccessToken(request http.Request) (string, error) {
+func (f *FakeServer) HandlerAccessToken(rrequest http.Request, response http.Response) (string, error) {
 	return "", nil
 }
 

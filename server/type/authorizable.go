@@ -44,7 +44,7 @@ type Authorizable interface {
 
 	HandlerAuthorize(request http.Request, response http.Response) (string, error)
 
-	HandlerAccessToken(request http.Request) (string, error)
+	HandlerAccessToken(request http.Request, response http.Response) (string, error)
 
-	HandlerRevokeToken(request http.Request) error
+	HandlerRevokeToken(request http.Request, response http.Response) error
 }

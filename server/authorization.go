@@ -180,11 +180,18 @@ func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response
 }
 
 //Issue token
-func (a *AuthorizationServer) HandlerAccessToken(request http.Request) (string, error) {
+func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response http.Response) (string, error) {
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
 
 	if grantType == "" {
 		return "", util.NewInvalidRequestError(grantType)
+	}
+
+	if grantType == util.OAUTH_AUTHORIZATION_CODE {
+		_, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
+		if err != nil {
+			return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
+		}
 	}
 
 	if _, ok := a.grants[grantType]; !ok {
@@ -200,11 +207,19 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request) (string, 
 		log.Panicln("Handler Response not initialize")
 	}
 
-	return message.Encode(), nil
+	token := message.Encode()
+
+	if grantType == util.OAUTH_AUTHORIZATION_CODE {
+		uri := request.GetParamUri(util.OAUTH_REDIRECT_URI)
+		response.RedirectUri(fmt.Sprintf("%s?token=%s", uri, token))
+		return token, nil
+	}
+
+	return token, nil
 }
 
 //Revoke token
-func (a *AuthorizationServer) HandlerRevokeToken(request http.Request) error {
+func (a *AuthorizationServer) HandlerRevokeToken(request http.Request, response http.Response) error {
 	token := request.GetRevokeToken()
 	if token == "" {
 		return util.NewInvalidRequestError(util.OAUTH_REVOKE_TOKEN)
