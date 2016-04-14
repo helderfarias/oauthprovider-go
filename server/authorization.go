@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/helderfarias/oauthprovider-go/encode"
@@ -148,6 +149,10 @@ func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response
 		return "", util.NewUnauthorizedClientError()
 	}
 
+	if redirectUri == "" {
+		redirectUri = this.getFirstUri(client.RedirectUri)
+	}
+
 	_, err = this.CheckScope(request, clientId)
 	if err != nil {
 		return "", util.NewInvalidScopeError()
@@ -163,8 +168,11 @@ func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response
 		return "", util.NewOAuthRuntimeError()
 	}
 
-	response.RedirectUri(fmt.Sprintf("%s?code=%s", redirectUri, authzCode))
-	return "", nil
+	responseUri := fmt.Sprintf("%s?code=%s", redirectUri, authzCode)
+
+	response.RedirectUri(responseUri)
+
+	return responseUri, nil
 }
 
 //Issue token
@@ -224,4 +232,23 @@ func (a *AuthorizationServer) HandlerRevokeToken(request http.Request) error {
 	}
 
 	return nil
+}
+
+func (a *AuthorizationServer) getFirstUri(uriList string) string {
+	if uriList == "" {
+		return ""
+	}
+
+	firstUri := ""
+
+	items := strings.Split(uriList, ",")
+	if len(items) > 0 {
+		firstUri = items[0]
+	}
+
+	if util.IsURL(firstUri) {
+		return firstUri
+	}
+
+	return ""
 }

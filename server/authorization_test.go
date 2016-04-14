@@ -3,13 +3,21 @@ package server
 import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
+	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/storage/memory"
+	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 type OAuthRequestFake struct {
+	param     string
+	paramsUri map[string]string
+}
+
+type OAuthResponseFake struct {
 	param string
 }
 
@@ -20,12 +28,15 @@ type GrantTypeFake struct {
 type MessageFake struct {
 }
 
+func (o *OAuthResponseFake) RedirectUri(uri string) {
+}
+
 func (o *OAuthRequestFake) GetParam(key string) string {
 	return o.param
 }
 
 func (o *OAuthRequestFake) GetParamUri(key string) string {
-	return o.param
+	return o.paramsUri[key]
 }
 
 func (o *OAuthRequestFake) GetScopes() []string {
@@ -146,4 +157,53 @@ func TestCreateTokenValid(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, token, "message")
+}
+
+func TestCreateAuthorizationCodeWithRedirectUriEmpty(t *testing.T) {
+	server := NewAuthorizationServer()
+	server.ClientStorage = &memory.MemoryClientStorage{}
+	server.ScopeStorage = &memory.MemoryScopeStorage{}
+	server.AuthzCodeStorage = &memory.MemoryAuthzCodeStorage{}
+	server.TokenType = &token.BearerTokenType{}
+
+	req := &OAuthRequestFake{param: "password", paramsUri: map[string]string{
+		"client_id":     "client_id",
+		"response_type": "code",
+	}}
+
+	res := &OAuthResponseFake{param: "password"}
+
+	server.ClientStorage.Save(&model.Client{Name: "client_id", RedirectUri: "http://api.dev.one, http://api.dev.two"})
+
+	code, err := server.HandlerAuthorize(req, res)
+
+	assert.Nil(t, err)
+	assert.NotEmpty(t, code)
+	assert.Contains(t, code, "http://api.dev.one")
+}
+
+func TestCreateAuthorizationCodeWithRedirectUriNotEmpty(t *testing.T) {
+	server := NewAuthorizationServer()
+	server.ClientStorage = &memory.MemoryClientStorage{}
+	server.ScopeStorage = &memory.MemoryScopeStorage{}
+	server.AuthzCodeStorage = &memory.MemoryAuthzCodeStorage{}
+	server.TokenType = &token.BearerTokenType{}
+
+	req := &OAuthRequestFake{param: "password", paramsUri: map[string]string{
+		"client_id":     "client_id",
+		"response_type": "code",
+		"redirect_uri":  "http://localhost:2000/api",
+	}}
+
+	res := &OAuthResponseFake{param: "password"}
+
+	server.ClientStorage.Save(&model.Client{Name: "client_id", RedirectUri: "http://api.dev.one, http://api.dev.two"})
+
+	code, err := server.HandlerAuthorize(req, res)
+
+	assert.Nil(t, err)
+	assert.NotEmpty(t, code)
+	assert.Contains(t, code, "http://localhost:2000/api")
+	assert.NotContains(t, code, "http://api.dev.one")
+	assert.NotContains(t, code, "http://api.dev.two")
 }
