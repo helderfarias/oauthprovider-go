@@ -3,16 +3,16 @@ package server
 import (
 	"errors"
 	"fmt"
-	"net/url"
+    "net/url"
 	"strings"
 	"time"
 
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
-	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/scope"
+    . "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/storage"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
@@ -189,14 +189,6 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 		return "", util.NewInvalidRequestError(grantType)
 	}
 
-	if grantType == util.OAUTH_AUTHORIZATION_CODE {
-		_, err := url.QueryUnescape(request.GetParam(util.OAUTH_REDIRECT_URI))
-		if err != nil {
-			Logger.Debug("Redirect Uri not found %s", err)
-			return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
-		}
-	}
-
 	if _, ok := a.grants[grantType]; !ok {
 		return "", util.NewUnSupportedGrantTypeError(grantType)
 	}
@@ -210,15 +202,7 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 		return "", errors.New("Handler Response not initialize")
 	}
 
-	token := message.Encode()
-
-	if grantType == util.OAUTH_AUTHORIZATION_CODE {
-		uri := request.GetParam(util.OAUTH_REDIRECT_URI)
-		response.RedirectUri(fmt.Sprintf("%s?token=%s", uri, token))
-		return token, nil
-	}
-
-	return token, nil
+	return message.Encode(), nil
 }
 
 //Revoke token

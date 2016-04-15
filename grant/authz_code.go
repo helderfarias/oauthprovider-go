@@ -1,6 +1,8 @@
 package grant
 
 import (
+    "net/url"
+        
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	. "github.com/helderfarias/oauthprovider-go/log"
@@ -37,6 +39,16 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		Logger.Debug("Client not found: %s, %s", clientId, clientSecret)
 		return nil, util.NewInvalidClientError()
 	}
+    
+    redirectUri := request.GetParam(util.OAUTH_REDIRECT_URI)
+    _, err := url.QueryUnescape(redirectUri)
+    if err != nil {
+        return nil, util.NewInvalidRequestError(redirectUri)
+    }
+    
+    if client.RedirectUri == redirectUri {
+        return nil, util.NewInvalidRequestError(redirectUri)
+    }    
 
     code := request.GetParam(util.OAUTH_CODE)
 	if code == "" {
@@ -44,7 +56,7 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
 	}
 
-	_, err := p.server.FindAuthzCode(code, clientId)
+	_, err = p.server.FindAuthzCode(code, clientId)
 	if err != nil {
 		Logger.Error("Authorization Code not found in storage: %s", err)
 		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
