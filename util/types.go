@@ -21,4 +21,5 @@ const (
 	OAUTH_RESPONSE_TYPE      = "response_type"
 	OAUTH_REDIRECT_URI       = "redirect_uri"
 	OAUTH_AUTHORIZATION_CODE = "authorization_code"
+	OAUTH_CODE               = "code"
 )

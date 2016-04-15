@@ -38,16 +38,16 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		return nil, util.NewInvalidClientError()
 	}
 
-	code := request.GetAuthorizationCode()
+    code := request.GetParam(util.OAUTH_CODE)
 	if code == "" {
 		Logger.Debug("Authorization Code not found: %s", code)
-		return nil, util.NewInvalidRequestError(util.OAUTH_AUTHORIZATION_CODE)
+		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
 	}
 
 	_, err := p.server.FindAuthzCode(code, clientId)
 	if err != nil {
 		Logger.Error("Authorization Code not found in storage: %s", err)
-		return nil, util.NewInvalidRequestError(util.OAUTH_AUTHORIZATION_CODE)
+		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
 	}
 
 	accessToken, err := p.createAccessToken(client)
