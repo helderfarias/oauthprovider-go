@@ -1,6 +1,9 @@
 package server
 
 import (
+	"net/url"
+	"testing"
+
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
@@ -9,7 +12,6 @@ import (
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 type OAuthRequestFake struct {
@@ -18,7 +20,8 @@ type OAuthRequestFake struct {
 }
 
 type OAuthResponseFake struct {
-	param string
+	param    string
+	redirect string
 }
 
 type GrantTypeFake struct {
@@ -29,6 +32,7 @@ type MessageFake struct {
 }
 
 func (o *OAuthResponseFake) RedirectUri(uri string) {
+	o.redirect = uri
 }
 
 func (o *OAuthRequestFake) GetParam(key string) string {
@@ -182,11 +186,14 @@ func TestCreateAuthorizationCodeWithRedirectUriEmpty(t *testing.T) {
 
 	server.ClientStorage.Save(&model.Client{Name: "client_id", RedirectUri: "http://api.dev.one, http://api.dev.two"})
 
-	code, err := server.HandlerAuthorize(req, res)
+	err := server.HandlerAuthorize(req, res)
+
+	url, _ := url.Parse(res.redirect)
 
 	assert.Nil(t, err)
-	assert.NotEmpty(t, code)
-	assert.Contains(t, code, "http://api.dev.one")
+	assert.NotEmpty(t, res.redirect)
+	assert.Contains(t, res.redirect, "http://api.dev.one")
+	assert.Empty(t, url.Query().Get("state"))
 }
 
 func TestCreateAuthorizationCodeWithRedirectUriNotEmpty(t *testing.T) {
@@ -200,17 +207,21 @@ func TestCreateAuthorizationCodeWithRedirectUriNotEmpty(t *testing.T) {
 		"client_id":     "client_id",
 		"response_type": "code",
 		"redirect_uri":  "http://localhost:2000/api",
+		"state":         "state-123",
 	}}
 
 	res := &OAuthResponseFake{param: "password"}
 
 	server.ClientStorage.Save(&model.Client{Name: "client_id", RedirectUri: "http://api.dev.one, http://api.dev.two"})
 
-	code, err := server.HandlerAuthorize(req, res)
+	err := server.HandlerAuthorize(req, res)
+
+	url, _ := url.Parse(res.redirect)
 
 	assert.Nil(t, err)
-	assert.NotEmpty(t, code)
-	assert.Contains(t, code, "http://localhost:2000/api")
-	assert.NotContains(t, code, "http://api.dev.one")
-	assert.NotContains(t, code, "http://api.dev.two")
+	assert.Contains(t, res.redirect, "http://localhost:2000/api")
+	assert.NotContains(t, res.redirect, "http://api.dev.one")
+	assert.NotContains(t, res.redirect, "http://api.dev.two")
+	assert.NotEmpty(t, url.Query().Get("code"))
+	assert.Equal(t, "state-123", url.Query().Get("state"))
 }

@@ -42,7 +42,7 @@ type Authorizable interface {
 
 	GetDefaultScope() string
 
-	HandlerAuthorize(request http.Request, response http.Response) (string, error)
+	HandlerAuthorize(request http.Request, response http.Response) error
 
 	HandlerAccessToken(request http.Request, response http.Response) (string, error)
 

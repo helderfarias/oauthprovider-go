@@ -3,16 +3,16 @@ package server
 import (
 	"errors"
 	"fmt"
-    "net/url"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
+	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/scope"
-    . "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/storage"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
@@ -129,29 +129,29 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 }
 
 //Issue authorize code
-func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
+func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) error {
 	reponseType := request.GetParamUri(util.OAUTH_RESPONSE_TYPE)
 	if reponseType == "" {
-		return "", util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
+		return util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
 	}
 
 	clientId := request.GetParamUri(util.OAUTH_CLIENT_ID)
 	if clientId == "" {
-		return "", util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
+		return util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
 	}
 
 	redirectUri, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
 	if err != nil {
-		return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
+		return util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
 	}
 
 	client := this.FindClientById(clientId)
 	if client == nil {
-		return "", util.NewInvalidClientError()
+		return util.NewInvalidClientError()
 	}
 
 	if client.RedirectUri == "" {
-		return "", util.NewUnauthorizedClientError()
+		return util.NewUnauthorizedClientError()
 	}
 
 	if redirectUri == "" {
@@ -160,24 +160,28 @@ func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response
 
 	_, err = this.CheckScope(request, clientId)
 	if err != nil {
-		return "", util.NewInvalidScopeError()
+		return util.NewInvalidScopeError()
 	}
 
 	authzCode, err := this.AuthorizeToken.GenerateCode()
 	if err != nil {
-		return "", util.NewOAuthRuntimeError()
+		return util.NewOAuthRuntimeError()
 	}
 
 	err = this.AuthzCodeStorage.Save(&model.AuthzCode{Code: authzCode, ClientId: clientId})
 	if err != nil {
-		return "", util.NewOAuthRuntimeError()
+		return util.NewOAuthRuntimeError()
 	}
 
 	responseUri := fmt.Sprintf("%s?code=%s", redirectUri, authzCode)
 
-	response.RedirectUri(responseUri)
+	state := request.GetParamUri(util.OAUTH_STATE)
+	if state != "" {
+		responseUri = fmt.Sprintf("%s&state=%s", responseUri, state)
+	}
 
-	return responseUri, nil
+	response.RedirectUri(responseUri)
+	return nil
 }
 
 //Issue token
