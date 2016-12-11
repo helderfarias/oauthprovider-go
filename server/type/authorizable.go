@@ -19,7 +19,7 @@ type Authorizable interface {
 
 	FindRefreshTokenById(refreshToken string) *model.RefreshToken
 
-	CreateToken(client *model.Client, user *model.User, scopes []string) string
+	CreateToken(client *model.Client, user string, scopes []string) string
 
 	DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error
 

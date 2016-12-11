@@ -80,7 +80,7 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 func (p *AuthzCodeGrant) createAccessToken(client *model.Client) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
-	accessToken.Token = p.server.CreateToken(client, nil, nil)
+	accessToken.Token = p.server.CreateToken(client, "", nil)
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
 	accessToken.Client = client
 
@@ -95,7 +95,7 @@ func (p *AuthzCodeGrant) createAccessToken(client *model.Client) (*model.AccessT
 func (p *AuthzCodeGrant) createRefreshToken(client *model.Client, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
-		refreshToken.Token = p.server.CreateToken(client, nil, nil)
+		refreshToken.Token = p.server.CreateToken(client, "", nil)
 		refreshToken.ExpiresAt = p.server.IssuerExpireTimeForRefreshToken()
 		refreshToken.Client = client
 		refreshToken.AccessToken = accessToken

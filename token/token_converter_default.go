@@ -13,7 +13,7 @@ type TokenConverterDefault struct {
 	ExpiryTimeInSecondsForRefreshToken int
 }
 
-func (o *TokenConverterDefault) AccessToken(client *model.Client, user *model.User, scopes []string) string {
+func (o *TokenConverterDefault) AccessToken(client *model.Client, user string, scopes []string) string {
 	return o.generateValue()
 }
 

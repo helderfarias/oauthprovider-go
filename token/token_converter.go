@@ -12,7 +12,7 @@ const (
 )
 
 type TokenConverter interface {
-	AccessToken(client *model.Client, user *model.User, scopes []string) string
+	AccessToken(client *model.Client, user string, scopes []string) string
 	RefreshToken() string
 	CreateExpireTimeForAccessToken() time.Time
 	CreateExpireTimeForRefreshToken() time.Time
