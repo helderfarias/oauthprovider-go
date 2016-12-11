@@ -1,8 +1,8 @@
 package grant
 
 import (
-    "net/url"
-        
+	"net/url"
+
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	. "github.com/helderfarias/oauthprovider-go/log"
@@ -39,18 +39,18 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		Logger.Debug("Client not found: %s, %s", clientId, clientSecret)
 		return nil, util.NewInvalidClientError()
 	}
-    
-    redirectUri := request.GetParam(util.OAUTH_REDIRECT_URI)
-    _, err := url.QueryUnescape(redirectUri)
-    if err != nil {
-        return nil, util.NewInvalidRequestError(redirectUri)
-    }
-    
-    if client.RedirectUri == redirectUri {
-        return nil, util.NewInvalidRequestError(redirectUri)
-    }    
 
-    code := request.GetParam(util.OAUTH_CODE)
+	redirectUri := request.GetParam(util.OAUTH_REDIRECT_URI)
+	_, err := url.QueryUnescape(redirectUri)
+	if err != nil {
+		return nil, util.NewInvalidRequestError(redirectUri)
+	}
+
+	if client.RedirectUri == redirectUri {
+		return nil, util.NewInvalidRequestError(redirectUri)
+	}
+
+	code := request.GetParam(util.OAUTH_CODE)
 	if code == "" {
 		Logger.Debug("Authorization Code not found: %s", code)
 		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
@@ -80,7 +80,7 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 func (p *AuthzCodeGrant) createAccessToken(client *model.Client) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
-	accessToken.Token = p.server.CreateToken()
+	accessToken.Token = p.server.CreateToken(client, nil, nil)
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
 	accessToken.Client = client
 
@@ -95,7 +95,7 @@ func (p *AuthzCodeGrant) createAccessToken(client *model.Client) (*model.AccessT
 func (p *AuthzCodeGrant) createRefreshToken(client *model.Client, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
-		refreshToken.Token = p.server.CreateToken()
+		refreshToken.Token = p.server.CreateToken(client, nil, nil)
 		refreshToken.ExpiresAt = p.server.IssuerExpireTimeForRefreshToken()
 		refreshToken.Client = client
 		refreshToken.AccessToken = accessToken

@@ -2,10 +2,11 @@ package token
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreate(t *testing.T) {
@@ -23,7 +24,7 @@ func TestGenerateValue(t *testing.T) {
 		ExpiryTimeInSecondsForRefreshToken: REFRESH_TOKEN_VALIDITY_SECONDS,
 	}
 
-	access := converter.AccessToken()
+	access := converter.AccessToken(nil, nil, nil)
 	refresh := converter.RefreshToken()
 
 	assert.NotEmpty(t, access)

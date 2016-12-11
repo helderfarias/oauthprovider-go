@@ -2,6 +2,8 @@ package token
 
 import (
 	"time"
+
+	"github.com/helderfarias/oauthprovider-go/model"
 )
 
 const (
@@ -10,7 +12,7 @@ const (
 )
 
 type TokenConverter interface {
-	AccessToken() string
+	AccessToken(client *model.Client, user *model.User, scopes []string) string
 	RefreshToken() string
 	CreateExpireTimeForAccessToken() time.Time
 	CreateExpireTimeForRefreshToken() time.Time

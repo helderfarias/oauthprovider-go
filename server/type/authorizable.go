@@ -1,10 +1,11 @@
 package servertype
 
 import (
+	"time"
+
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"time"
 )
 
 type Authorizable interface {
@@ -18,7 +19,7 @@ type Authorizable interface {
 
 	FindRefreshTokenById(refreshToken string) *model.RefreshToken
 
-	CreateToken() string
+	CreateToken(client *model.Client, user *model.User, scopes []string) string
 
 	DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error
 

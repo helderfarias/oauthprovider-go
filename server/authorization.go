@@ -99,8 +99,8 @@ func (a *AuthorizationServer) FindRefreshTokenById(refreshToken string) *model.R
 	return a.RefreshTokenStorage.FindById(refreshToken)
 }
 
-func (a *AuthorizationServer) CreateToken() string {
-	return a.TokenConverter.AccessToken()
+func (a *AuthorizationServer) CreateToken(client *model.Client, user *model.User, scopes []string) string {
+	return a.TokenConverter.AccessToken(client, user, scopes)
 }
 
 func (a *AuthorizationServer) IssuerExpireTimeForAccessToken() time.Time {

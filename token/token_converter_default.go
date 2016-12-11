@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"time"
+
+	"github.com/helderfarias/oauthprovider-go/model"
 )
 
 type TokenConverterDefault struct {
@@ -11,7 +13,7 @@ type TokenConverterDefault struct {
 	ExpiryTimeInSecondsForRefreshToken int
 }
 
-func (o *TokenConverterDefault) AccessToken() string {
+func (o *TokenConverterDefault) AccessToken(client *model.Client, user *model.User, scopes []string) string {
 	return o.generateValue()
 }
 
