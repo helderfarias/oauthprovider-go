@@ -52,7 +52,7 @@ func (p *ClientCredencial) HandleResponse(request http.Request) (encode.Message,
 func (p *ClientCredencial) createAccessToken(client *model.Client, scopes []string) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
-	accessToken.Token = p.server.CreateToken(client, "", scopes)
+	accessToken.Token = p.server.CreateToken(client, scopes)
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
 	accessToken.Client = client
 

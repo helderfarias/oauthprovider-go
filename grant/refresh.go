@@ -85,7 +85,7 @@ func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message
 func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.User) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
-	accessToken.Token = p.server.CreateToken(client, "", nil)
+	accessToken.Token = p.server.CreateToken(client, []string{})
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
 	accessToken.Client = client
 	accessToken.User = user
@@ -101,7 +101,7 @@ func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.
 func (p *RefreshTokenGrant) createRefreshToken(client *model.Client, user *model.User, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
-		refreshToken.Token = p.server.CreateToken(client, "", nil)
+		refreshToken.Token = p.server.CreateToken(client, []string{})
 		refreshToken.ExpiresAt = p.server.IssuerExpireTimeForRefreshToken()
 		refreshToken.Client = client
 		refreshToken.User = user

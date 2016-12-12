@@ -68,12 +68,12 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidScopeError()
 	}
 
-	accessToken, err := p.createAccessToken(client, user, userName, scopes)
+	accessToken, err := p.createAccessToken(client, user, scopes)
 	if err != nil {
 		return nil, util.NewOAuthRuntimeError()
 	}
 
-	refreshToken, err := p.createRefreshToken(client, user, userName, accessToken)
+	refreshToken, err := p.createRefreshToken(client, user, scopes, accessToken)
 	if err != nil {
 		return nil, util.NewOAuthRuntimeError()
 	}
@@ -81,10 +81,10 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 	return p.server.CreateResponse(accessToken, refreshToken), nil
 }
 
-func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User, userName string, scopes []string) (*model.AccessToken, error) {
+func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User, scopes []string) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
-	accessToken.Token = p.server.CreateToken(client, userName, scopes)
+	accessToken.Token = p.server.CreateToken(client, scopes)
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
 	accessToken.Client = client
 	accessToken.User = user
@@ -97,10 +97,10 @@ func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User
 	return accessToken, nil
 }
 
-func (p *PasswordGrant) createRefreshToken(client *model.Client, user *model.User, userName string, accessToken *model.AccessToken) (*model.RefreshToken, error) {
+func (p *PasswordGrant) createRefreshToken(client *model.Client, user *model.User, scopes []string, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
-		refreshToken.Token = p.server.CreateToken(client, userName, nil)
+		refreshToken.Token = p.server.CreateToken(client, scopes)
 		refreshToken.ExpiresAt = p.server.IssuerExpireTimeForRefreshToken()
 		refreshToken.Client = client
 		refreshToken.User = user

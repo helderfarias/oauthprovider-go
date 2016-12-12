@@ -24,7 +24,7 @@ func TestGenerateValue(t *testing.T) {
 		ExpiryTimeInSecondsForRefreshToken: REFRESH_TOKEN_VALIDITY_SECONDS,
 	}
 
-	access := converter.AccessToken(nil, nil, nil)
+	access := converter.AccessToken(nil, nil)
 	refresh := converter.RefreshToken()
 
 	assert.NotEmpty(t, access)
