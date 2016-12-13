@@ -39,7 +39,7 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 		return "", util.NewInvalidClientError()
 	}
 
-	redirectURI := request.GetParam(util.OAUTH_REDIRECT_URI)
+	redirectURI := client.RedirectUri
 	_, err := url.QueryUnescape(redirectURI)
 	if err != nil {
 		return "", util.NewInvalidRequestError(redirectURI)
