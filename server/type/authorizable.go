@@ -48,4 +48,6 @@ type Authorizable interface {
 	HandlerAccessToken(request http.Request, response http.Response) (string, error)
 
 	HandlerRevokeToken(request http.Request, response http.Response) error
+
+	StoreAuthzCode(code *model.AuthzCode) error
 }

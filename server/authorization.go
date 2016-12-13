@@ -2,11 +2,10 @@ package server
 
 import (
 	"errors"
-	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
+	"github.com/helderfarias/oauthprovider-go/authorization"
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/grant"
 	"github.com/helderfarias/oauthprovider-go/http"
@@ -21,6 +20,7 @@ import (
 //Authorization Server for OAuth2
 type AuthorizationServer struct {
 	grants              map[string]grant.GrantType
+	authzs              map[string]authorization.AuthorizeType
 	scopeRequired       bool
 	defaultScope        string
 	TokenType           token.TokenType
@@ -35,8 +35,8 @@ type AuthorizationServer struct {
 
 func NewAuthorizationServer() *AuthorizationServer {
 	return &AuthorizationServer{
-		grants:         make(map[string]grant.GrantType),
-		AuthorizeToken: &token.AuthorizeTokenGenerator{},
+		grants: make(map[string]grant.GrantType),
+		authzs: make(map[string]authorization.AuthorizeType),
 		TokenConverter: &token.TokenConverterDefault{
 			ExpiryTimeInSecondsForAccessToken:  token.ACCESS_TOKEN_VALIDITY_SECONDS,
 			ExpiryTimeInSecondsForRefreshToken: token.REFRESH_TOKEN_VALIDITY_SECONDS,
@@ -77,6 +77,11 @@ func (a *AuthorizationServer) HasGrantType(identified string) bool {
 func (a *AuthorizationServer) AddGrant(grantType grant.GrantType) {
 	grantType.SetServer(a)
 	a.grants[grantType.Identifier()] = grantType
+}
+
+func (a *AuthorizationServer) AddAuthzCode(authzType authorization.AuthorizeType) {
+	authzType.SetServer(a)
+	a.authzs[authzType.Identifier()] = authzType
 }
 
 func (a *AuthorizationServer) CreateResponse(accessToken *model.AccessToken, refreshToken *model.RefreshToken) encode.Message {
@@ -124,70 +129,33 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 	if err != nil {
 		return err
 	}
-
 	return a.AccessTokenStorage.Delete(accessToken)
 }
 
-//Issue authorize code
+func (a *AuthorizationServer) StoreAuthzCode(code *model.AuthzCode) error {
+	return a.AuthzCodeStorage.Save(code)
+}
+
+// HandlerAuthorize Issue authorize code
 func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
-	reponseType := request.GetParamUri(util.OAUTH_RESPONSE_TYPE)
+	reponseType := request.GetParam(util.OAUTH_RESPONSE_TYPE)
 	if reponseType == "" {
 		return "", util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
 	}
 
-	clientId := request.GetParamUri(util.OAUTH_CLIENT_ID)
-	if clientId == "" {
-		return "", util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
+	if _, ok := this.authzs[reponseType]; !ok {
+		return "", util.NewUnSupportedGrantTypeError(reponseType)
 	}
 
-	redirectUri, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
+	result, err := this.authzs[reponseType].HandleResponse(request)
 	if err != nil {
-		return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
+		return "", err
 	}
 
-	client := this.FindClientById(clientId)
-	if client == nil {
-		return "", util.NewInvalidClientError()
-	}
-
-	if client.RedirectUri == "" {
-		return "", util.NewUnauthorizedClientError()
-	}
-
-	if redirectUri == "" {
-		redirectUri = this.getFirstUri(client.RedirectUri)
-	}
-
-	if client.RedirectUri != redirectUri {
-		return "", util.NewUnauthorizedClientError()
-	}
-
-	_, err = this.CheckScope(request, clientId)
-	if err != nil {
-		return "", util.NewInvalidScopeError()
-	}
-
-	authzCode, err := this.AuthorizeToken.GenerateCode()
-	if err != nil {
-		return "", util.NewOAuthRuntimeError()
-	}
-
-	err = this.AuthzCodeStorage.Save(&model.AuthzCode{Code: authzCode, ClientId: clientId})
-	if err != nil {
-		return "", util.NewOAuthRuntimeError()
-	}
-
-	responseURI := fmt.Sprintf("%s?code=%s", redirectUri, authzCode)
-
-	state := request.GetParamUri(util.OAUTH_STATE)
-	if state != "" {
-		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
-	}
-
-	return responseURI, nil
+	return result, nil
 }
 
-//Issue token
+// HandlerAccessToken Issue token
 func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response http.Response) (string, error) {
 	grantType := request.GetParam(util.OAUTH_GRANT_TYPE)
 

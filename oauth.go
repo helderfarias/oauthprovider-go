@@ -1,6 +1,7 @@
 package oauthprovider
 
 import (
+	"github.com/helderfarias/oauthprovider-go/authorization"
 	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/storage/memory"
 	"github.com/helderfarias/oauthprovider-go/token"
@@ -15,6 +16,8 @@ func New() *OAuthServer {
 
 func (o *OAuthServer) AuthorizationServer() *server.AuthorizationServer {
 	newServer := server.NewAuthorizationServer()
+	newServer.AddAuthzCode(&authorization.AuthorizationCode{})
+	newServer.AddAuthzCode(&authorization.AuthorizationToken{})
 	newServer.AccessTokenStorage = &memory.MemoryAccessTokenStorage{}
 	newServer.RefreshTokenStorage = &memory.MemoryRefreshTokenStorage{}
 	newServer.ClientStorage = &memory.MemoryClientStorage{}
