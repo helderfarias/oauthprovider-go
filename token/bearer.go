@@ -1,12 +1,13 @@
 package token
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/helderfarias/oauthprovider-go/util"
-	"regexp"
-	"strings"
 )
 
 type BearerTokenType struct {
@@ -32,7 +33,7 @@ func (b *BearerTokenType) GetAccessTokenInHeader(request http.Request) string {
 		return ""
 	}
 
-	re := regexp.MustCompile("(?P<s1>\\w+) (?P<s2>\\w+)")
+	re := regexp.MustCompile("(?P<s1>\\w+) (?P<s2>.*)")
 	if re.MatchString(authzHeader) {
 		str1 := re.ReplaceAllString(authzHeader, "${s1}")
 		str2 := re.ReplaceAllString(authzHeader, "${s2}")
