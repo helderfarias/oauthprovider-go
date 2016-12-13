@@ -129,59 +129,62 @@ func (a *AuthorizationServer) DeleteTokens(refreshToken *model.RefreshToken, acc
 }
 
 //Issue authorize code
-func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) error {
+func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
 	reponseType := request.GetParamUri(util.OAUTH_RESPONSE_TYPE)
 	if reponseType == "" {
-		return util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
+		return "", util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
 	}
 
 	clientId := request.GetParamUri(util.OAUTH_CLIENT_ID)
 	if clientId == "" {
-		return util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
+		return "", util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
 	}
 
 	redirectUri, err := url.QueryUnescape(request.GetParamUri(util.OAUTH_REDIRECT_URI))
 	if err != nil {
-		return util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
+		return "", util.NewInvalidRequestError(util.OAUTH_REDIRECT_URI)
 	}
 
 	client := this.FindClientById(clientId)
 	if client == nil {
-		return util.NewInvalidClientError()
+		return "", util.NewInvalidClientError()
 	}
 
 	if client.RedirectUri == "" {
-		return util.NewUnauthorizedClientError()
+		return "", util.NewUnauthorizedClientError()
 	}
 
 	if redirectUri == "" {
 		redirectUri = this.getFirstUri(client.RedirectUri)
 	}
 
+	if client.RedirectUri != redirectUri {
+		return "", util.NewUnauthorizedClientError()
+	}
+
 	_, err = this.CheckScope(request, clientId)
 	if err != nil {
-		return util.NewInvalidScopeError()
+		return "", util.NewInvalidScopeError()
 	}
 
 	authzCode, err := this.AuthorizeToken.GenerateCode()
 	if err != nil {
-		return util.NewOAuthRuntimeError()
+		return "", util.NewOAuthRuntimeError()
 	}
 
 	err = this.AuthzCodeStorage.Save(&model.AuthzCode{Code: authzCode, ClientId: clientId})
 	if err != nil {
-		return util.NewOAuthRuntimeError()
+		return "", util.NewOAuthRuntimeError()
 	}
 
-	responseUri := fmt.Sprintf("%s?code=%s", redirectUri, authzCode)
+	responseURI := fmt.Sprintf("%s?code=%s", redirectUri, authzCode)
 
 	state := request.GetParamUri(util.OAUTH_STATE)
 	if state != "" {
-		responseUri = fmt.Sprintf("%s&state=%s", responseUri, state)
+		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	}
 
-	response.RedirectUri(responseUri)
-	return nil
+	return responseURI, nil
 }
 
 //Issue token

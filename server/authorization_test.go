@@ -186,7 +186,7 @@ func TestCreateAuthorizationCodeWithRedirectUriEmpty(t *testing.T) {
 
 	server.ClientStorage.Save(&model.Client{Name: "client_id", RedirectUri: "http://api.dev.one, http://api.dev.two"})
 
-	err := server.HandlerAuthorize(req, res)
+	_, err := server.HandlerAuthorize(req, res)
 
 	url, _ := url.Parse(res.redirect)
 
@@ -214,7 +214,7 @@ func TestCreateAuthorizationCodeWithRedirectUriNotEmpty(t *testing.T) {
 
 	server.ClientStorage.Save(&model.Client{Name: "client_id", RedirectUri: "http://api.dev.one, http://api.dev.two"})
 
-	err := server.HandlerAuthorize(req, res)
+	_, err := server.HandlerAuthorize(req, res)
 
 	url, _ := url.Parse(res.redirect)
 

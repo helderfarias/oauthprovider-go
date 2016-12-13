@@ -1,10 +1,11 @@
 package grant
 
 import (
+	"time"
+
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"time"
 )
 
 type StubOAuthRequest struct {
@@ -107,7 +108,7 @@ func (f *FakeServer) CreateResponse(accessToken *model.AccessToken, refreshToken
 	return &encode.OAuthMessage{AccessToken: "token00", TokenType: "Bearer", ExpiresIn: 3600}
 }
 
-func (f *FakeServer) CreateToken() string {
+func (f *FakeServer) CreateToken(*model.Client, []string) string {
 	return ""
 }
 

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go test $(glide novendor)
+go test $(go list ./... | grep -v /vendor/)
