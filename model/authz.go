@@ -10,11 +10,11 @@ type AuthzCode struct {
 }
 
 func (a *AuthzCode) Expired() bool {
-	expiresAt := time.Unix(a.TokenExpiry, 0)
+	expiresAt := time.Unix(a.TokenExpiry, 0).UTC()
 	if expiresAt.IsZero() {
 		return false
 	}
 
 	now := time.Now().UTC()
-	return expiresAt.After(now)
+	return now.After(expiresAt)
 }
