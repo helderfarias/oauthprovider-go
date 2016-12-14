@@ -95,6 +95,10 @@ func (m *MessageFake) Encode() string {
 	return ""
 }
 
+func (m *MessageFake) Message() encode.OAuthMessage {
+	return encode.OAuthMessage{}
+}
+
 func (o *GrantTypeFake) HandleResponse(request http.Request) (encode.Message, error) {
 	return &MessageFake{}, nil
 }

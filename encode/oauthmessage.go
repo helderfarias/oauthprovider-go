@@ -24,6 +24,15 @@ type encodeRefreshToken struct {
 	ExpiresIn    int64  `json:"expires_in"`
 }
 
+func (o *OAuthMessage) Message() OAuthMessage {
+	return OAuthMessage{
+		AccessToken:  o.AccessToken,
+		RefreshToken: o.RefreshToken,
+		TokenType:    o.TokenType,
+		ExpiresIn:    o.ExpiresIn,
+	}
+}
+
 func (o *OAuthMessage) Encode() string {
 	var output interface{}
 

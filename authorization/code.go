@@ -41,12 +41,8 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 
 	redirectURI := client.RedirectUri
 	_, err := url.QueryUnescape(redirectURI)
-	if err != nil {
+	if err != nil || redirectURI == "" {
 		return "", util.NewInvalidRequestError(redirectURI)
-	}
-
-	if redirectURI == "" {
-		return "", util.NewUnauthorizedClientError()
 	}
 
 	_, err = this.server.CheckScope(request, clientID)
@@ -67,7 +63,7 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 
 	responseURI := fmt.Sprintf("%s?code=%s", redirectURI, authzCode)
 
-	state := request.GetParamUri(util.OAUTH_STATE)
+	state := request.GetParam(util.OAUTH_STATE)
 	if state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	}

@@ -140,6 +140,10 @@ func (a *AuthorizationServer) StoreAuthzCode(code *model.AuthzCode) error {
 func (this *AuthorizationServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
 	reponseType := request.GetParam(util.OAUTH_RESPONSE_TYPE)
 	if reponseType == "" {
+		reponseType = request.GetParamUri(util.OAUTH_RESPONSE_TYPE)
+	}
+
+	if reponseType == "" {
 		return "", util.NewInvalidRequestError(util.OAUTH_RESPONSE_TYPE)
 	}
 
