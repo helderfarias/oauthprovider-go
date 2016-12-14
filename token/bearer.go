@@ -16,7 +16,7 @@ type BearerTokenType struct {
 func (b *BearerTokenType) CreateResponse(accessToken *model.AccessToken, refreshToken *model.RefreshToken) encode.Message {
 	msg := &encode.OAuthMessage{}
 	msg.TokenType = util.OAUTH_HEADER_NAME
-	msg.ExpiresIn = accessToken.ExpiresAtInMilliseconds()
+	msg.ExpiresIn = accessToken.ExpiresAt.Unix()
 	msg.AccessToken = accessToken.Token
 
 	if refreshToken != nil {

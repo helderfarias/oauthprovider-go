@@ -169,5 +169,8 @@ func (f *FakeServer) HandlerAccessToken(rrequest http.Request, response http.Res
 
 func (f *FakeServer) HandlerAuthorize(request http.Request, response http.Response) (string, error) {
 	return "", nil
+}
 
+func (f *FakeServer) StoreAuthzCode(code *model.AuthzCode) error {
+	return nil
 }

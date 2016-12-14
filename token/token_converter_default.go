@@ -42,5 +42,5 @@ func (o *TokenConverterDefault) generateValue() string {
 func (o *TokenConverterDefault) calculateExpiryTime(daysInSeconds int) time.Time {
 	expiresAt := time.Now()
 	expiresAt = expiresAt.Add(time.Duration(daysInSeconds) * time.Second)
-	return expiresAt
+	return expiresAt.UTC()
 }

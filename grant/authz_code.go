@@ -56,10 +56,15 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
 	}
 
-	_, err = p.server.FindAuthzCode(code, clientId)
+	result, err := p.server.FindAuthzCode(code, clientId)
 	if err != nil {
 		Logger.Error("Authorization Code not found in storage: %s", err)
 		return nil, util.NewInvalidRequestError(util.OAUTH_CODE)
+	}
+
+	if result.Expired() {
+		Logger.Error("Authorization Code has expired: %s", result.Code)
+		return nil, util.NewUnauthorizedClientError()
 	}
 
 	accessToken, err := p.createAccessToken(client)
