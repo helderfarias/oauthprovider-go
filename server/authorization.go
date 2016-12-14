@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"strings"
 	"time"
 
@@ -178,7 +177,7 @@ func (a *AuthorizationServer) HandlerAccessToken(request http.Request, response 
 	}
 
 	if message == nil {
-		return "", errors.New("Handler Response not initialize")
+		return "", util.NewOAuthRuntimeError()
 	}
 
 	return message.Encode(), nil
