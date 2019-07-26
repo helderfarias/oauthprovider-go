@@ -6,7 +6,7 @@ import (
 
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
@@ -52,7 +52,7 @@ func (p *AuthorizationToken) HandleResponse(request http.Request) (string, error
 
 	responseURI := fmt.Sprintf("%s#access_token=%s&token_type=%s&expires_in=%d", redirectURI, encode.AccessToken, encode.TokenType, encode.ExpiresIn)
 
-	state := request.GetParam(util.OAUTH_STATE)
+	state := request.GetParamUri(util.OAUTH_STATE)
 	if state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	}

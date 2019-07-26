@@ -6,7 +6,7 @@ import (
 
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
@@ -63,7 +63,7 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 
 	responseURI := fmt.Sprintf("%s?code=%s", redirectURI, authzCode)
 
-	state := request.GetParam(util.OAUTH_STATE)
+	state := request.GetParamUri(util.OAUTH_STATE)
 	if state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	}
