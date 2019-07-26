@@ -64,8 +64,9 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 
 	responseURI := fmt.Sprintf("%s?code=%s", redirectURI, authzCode)
 
-	state := strings.TrimSpace(request.GetParamUri(util.OAUTH_STATE))
-	if state != "" {
+	if state := strings.TrimSpace(request.GetParamUri(util.OAUTH_STATE)); state != "" {
+		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
+	} else if state := strings.TrimSpace(request.GetParam(util.OAUTH_STATE)); state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	}
 
