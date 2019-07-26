@@ -3,6 +3,7 @@ package authorization
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
@@ -63,7 +64,7 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 
 	responseURI := fmt.Sprintf("%s?code=%s", redirectURI, authzCode)
 
-	state := request.GetParamUri(util.OAUTH_STATE)
+	state := strings.TrimSpace(request.GetParamUri(util.OAUTH_STATE))
 	if state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	}
