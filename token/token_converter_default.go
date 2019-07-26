@@ -17,7 +17,7 @@ func (o *TokenConverterDefault) AccessToken(client *model.Client, scopes []strin
 	return o.generateValue()
 }
 
-func (o *TokenConverterDefault) RefreshToken() string {
+func (o *TokenConverterDefault) RefreshToken(client *model.Client, scopes []string) string {
 	return o.generateValue()
 }
 

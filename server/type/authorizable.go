@@ -21,6 +21,8 @@ type Authorizable interface {
 
 	CreateToken(client *model.Client, copes []string) string
 
+	CreateRefreshToken(client *model.Client, copes []string) string
+
 	DeleteTokens(refreshToken *model.RefreshToken, accessToken *model.AccessToken) error
 
 	IssuerExpireTimeForAccessToken() time.Time

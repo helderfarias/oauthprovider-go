@@ -25,7 +25,7 @@ func TestGenerateValue(t *testing.T) {
 	}
 
 	access := converter.AccessToken(nil, nil)
-	refresh := converter.RefreshToken()
+	refresh := converter.RefreshToken(nil, nil)
 
 	assert.NotEmpty(t, access)
 	assert.NotEmpty(t, refresh)

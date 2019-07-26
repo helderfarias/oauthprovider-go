@@ -4,7 +4,7 @@ import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
@@ -100,11 +100,15 @@ func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User
 func (p *PasswordGrant) createRefreshToken(client *model.Client, user *model.User, scopes []string, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
-		refreshToken.Token = p.server.CreateToken(client, scopes)
+		refreshToken.Token = p.server.CreateRefreshToken(client, []string{})
 		refreshToken.ExpiresAt = p.server.IssuerExpireTimeForRefreshToken()
 		refreshToken.Client = client
 		refreshToken.User = user
 		refreshToken.AccessToken = accessToken
+
+		if refreshToken.Token == "" {
+			return nil, nil
+		}
 
 		err := p.server.StoreRefreshToken(refreshToken)
 		if err != nil {

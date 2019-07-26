@@ -107,6 +107,10 @@ func (a *AuthorizationServer) CreateToken(client *model.Client, scopes []string)
 	return a.TokenConverter.AccessToken(client, scopes)
 }
 
+func (a *AuthorizationServer) CreateRefreshToken(client *model.Client, scopes []string) string {
+	return a.TokenConverter.RefreshToken(client, scopes)
+}
+
 func (a *AuthorizationServer) IssuerExpireTimeForAccessToken() time.Time {
 	return a.TokenConverter.CreateExpireTimeForAccessToken()
 }

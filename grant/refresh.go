@@ -5,7 +5,7 @@ import (
 	"github.com/helderfarias/oauthprovider-go/http"
 	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
@@ -84,7 +84,6 @@ func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message
 
 func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.User) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
-
 	accessToken.Token = p.server.CreateToken(client, []string{})
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
 	accessToken.Client = client
@@ -101,11 +100,15 @@ func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.
 func (p *RefreshTokenGrant) createRefreshToken(client *model.Client, user *model.User, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
-		refreshToken.Token = p.server.CreateToken(client, []string{})
+		refreshToken.Token = p.server.CreateRefreshToken(client, []string{})
 		refreshToken.ExpiresAt = p.server.IssuerExpireTimeForRefreshToken()
 		refreshToken.Client = client
 		refreshToken.User = user
 		refreshToken.AccessToken = accessToken
+
+		if refreshToken.Token == "" {
+			return nil, nil
+		}
 
 		err := p.server.StoreRefreshToken(refreshToken)
 		if err != nil {
