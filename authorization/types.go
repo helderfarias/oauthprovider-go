@@ -2,7 +2,7 @@ package authorization
 
 import (
 	"github.com/helderfarias/oauthprovider-go/http"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 )
 
 type AuthorizeType interface {
@@ -12,3 +12,5 @@ type AuthorizeType interface {
 
 	HandleResponse(request http.Request) (string, error)
 }
+
+type HandleResponseFunc func(request http.Request, options ...interface{}) (string, error)

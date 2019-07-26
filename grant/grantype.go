@@ -3,7 +3,7 @@ package grant
 import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 )
 
 type GrantType interface {
@@ -13,3 +13,5 @@ type GrantType interface {
 
 	HandleResponse(request http.Request) (encode.Message, error)
 }
+
+type HandleResponseFunc func(request http.Request, options ...interface{}) error

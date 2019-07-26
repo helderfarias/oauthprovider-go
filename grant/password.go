@@ -8,20 +8,46 @@ import (
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
-type PasswordGrant struct {
+type passwordGrant struct {
 	server   servertype.Authorizable
 	Callback func(userName, password string) *model.User
+	before   HandleResponseFunc
+	after    HandleResponseFunc
 }
 
-func (p *PasswordGrant) SetServer(server servertype.Authorizable) {
+type PasswordGrantOption func(*passwordGrant)
+
+func NewPasswordGrant(opts ...PasswordGrantOption) *passwordGrant {
+	s := &passwordGrant{}
+
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
+}
+
+func PasswordGrantAfter(fn HandleResponseFunc) PasswordGrantOption {
+	return func(a *passwordGrant) {
+		a.after = fn
+	}
+}
+
+func PasswordGrantBefore(fn HandleResponseFunc) PasswordGrantOption {
+	return func(a *passwordGrant) {
+		a.before = fn
+	}
+}
+
+func (p *passwordGrant) SetServer(server servertype.Authorizable) {
 	p.server = server
 }
 
-func (p *PasswordGrant) Identifier() string {
+func (p *passwordGrant) Identifier() string {
 	return util.OAUTH_PASSWORD
 }
 
-func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, error) {
+func (p *passwordGrant) HandleResponse(request http.Request) (encode.Message, error) {
 	clientId := request.GetClientId()
 	if clientId == "" {
 		return nil, util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
@@ -68,6 +94,12 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidScopeError()
 	}
 
+	if p.before != nil {
+		if err := p.before(request); err != nil {
+			return nil, err
+		}
+	}
+
 	accessToken, err := p.createAccessToken(client, user, scopes)
 	if err != nil {
 		return nil, util.NewOAuthRuntimeError()
@@ -78,10 +110,16 @@ func (p *PasswordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewOAuthRuntimeError()
 	}
 
+	if p.after != nil {
+		if err := p.after(request, accessToken, refreshToken); err != nil {
+			return nil, err
+		}
+	}
+
 	return p.server.CreateResponse(accessToken, refreshToken), nil
 }
 
-func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User, scopes []string) (*model.AccessToken, error) {
+func (p *passwordGrant) createAccessToken(client *model.Client, user *model.User, scopes []string) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
 	accessToken.Token = p.server.CreateToken(client, scopes)
@@ -97,7 +135,7 @@ func (p *PasswordGrant) createAccessToken(client *model.Client, user *model.User
 	return accessToken, nil
 }
 
-func (p *PasswordGrant) createRefreshToken(client *model.Client, user *model.User, scopes []string, accessToken *model.AccessToken) (*model.RefreshToken, error) {
+func (p *passwordGrant) createRefreshToken(client *model.Client, user *model.User, scopes []string, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
 		refreshToken.Token = p.server.CreateRefreshToken(client, []string{})

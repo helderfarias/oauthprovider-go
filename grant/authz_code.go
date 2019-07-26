@@ -11,19 +11,45 @@ import (
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
-type AuthzCodeGrant struct {
+type authzCodeGrant struct {
 	server servertype.Authorizable
+	before HandleResponseFunc
+	after  HandleResponseFunc
 }
 
-func (p *AuthzCodeGrant) SetServer(server servertype.Authorizable) {
+type AuthzCodeGrantOption func(*authzCodeGrant)
+
+func NewAuthzCodeGrant(opts ...AuthzCodeGrantOption) *authzCodeGrant {
+	s := &authzCodeGrant{}
+
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
+}
+
+func AuthzCodeGrantAfter(fn HandleResponseFunc) AuthzCodeGrantOption {
+	return func(a *authzCodeGrant) {
+		a.after = fn
+	}
+}
+
+func AuthzCodeGrantBefore(fn HandleResponseFunc) AuthzCodeGrantOption {
+	return func(a *authzCodeGrant) {
+		a.before = fn
+	}
+}
+
+func (p *authzCodeGrant) SetServer(server servertype.Authorizable) {
 	p.server = server
 }
 
-func (p *AuthzCodeGrant) Identifier() string {
+func (p *authzCodeGrant) Identifier() string {
 	return util.OAUTH_AUTHORIZATION_CODE
 }
 
-func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, error) {
+func (p *authzCodeGrant) HandleResponse(request http.Request) (encode.Message, error) {
 	authorization := request.GetAuthorizationBasic()
 	if authorization == nil ||
 		authorization[0] == "" ||
@@ -67,6 +93,12 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		return nil, util.NewUnauthorizedClientError()
 	}
 
+	if p.before != nil {
+		if err := p.before(request); err != nil {
+			return nil, err
+		}
+	}
+
 	accessToken, err := p.createAccessToken(client)
 	if err != nil {
 		Logger.Error("Error on create token: %s", err)
@@ -79,10 +111,16 @@ func (p *AuthzCodeGrant) HandleResponse(request http.Request) (encode.Message, e
 		return nil, util.NewOAuthRuntimeError()
 	}
 
+	if p.after != nil {
+		if err := p.after(request, accessToken, refreshToken); err != nil {
+			return nil, err
+		}
+	}
+
 	return p.server.CreateResponse(accessToken, refreshToken), nil
 }
 
-func (p *AuthzCodeGrant) createAccessToken(client *model.Client) (*model.AccessToken, error) {
+func (p *authzCodeGrant) createAccessToken(client *model.Client) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
 	accessToken.Token = p.server.CreateToken(client, []string{})
@@ -97,7 +135,7 @@ func (p *AuthzCodeGrant) createAccessToken(client *model.Client) (*model.AccessT
 	return accessToken, nil
 }
 
-func (p *AuthzCodeGrant) createRefreshToken(client *model.Client, accessToken *model.AccessToken) (*model.RefreshToken, error) {
+func (p *authzCodeGrant) createRefreshToken(client *model.Client, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
 		refreshToken.Token = p.server.CreateRefreshToken(client, []string{})

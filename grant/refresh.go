@@ -10,20 +10,45 @@ import (
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
-type RefreshTokenGrant struct {
-	callback VerifyCredentialsCallback
-	server   servertype.Authorizable
+type refreshTokenGrant struct {
+	server servertype.Authorizable
+	before HandleResponseFunc
+	after  HandleResponseFunc
 }
 
-func (p *RefreshTokenGrant) SetServer(server servertype.Authorizable) {
+type RefreshTokenGrantOption func(*refreshTokenGrant)
+
+func NewRefreshTokenGrant(opts ...RefreshTokenGrantOption) *refreshTokenGrant {
+	s := &refreshTokenGrant{}
+
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
+}
+
+func RefreshTokenGrantAfter(fn HandleResponseFunc) RefreshTokenGrantOption {
+	return func(a *refreshTokenGrant) {
+		a.after = fn
+	}
+}
+
+func RefreshTokenGrantBefore(fn HandleResponseFunc) RefreshTokenGrantOption {
+	return func(a *refreshTokenGrant) {
+		a.before = fn
+	}
+}
+
+func (p *refreshTokenGrant) SetServer(server servertype.Authorizable) {
 	p.server = server
 }
 
-func (p *RefreshTokenGrant) Identifier() string {
+func (p *refreshTokenGrant) Identifier() string {
 	return util.OAUTH_REFRESH_TOKEN
 }
 
-func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message, error) {
+func (p *refreshTokenGrant) HandleResponse(request http.Request) (encode.Message, error) {
 	clientId := request.GetClientId()
 	if clientId == "" {
 		return nil, util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
@@ -65,7 +90,16 @@ func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message
 
 	Logger.Info("%s", oldRefreshToken)
 
-	p.server.DeleteTokens(oldRefreshToken, oldRefreshToken.AccessToken)
+	if p.before != nil {
+		if err := p.before(request); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := p.server.DeleteTokens(oldRefreshToken, oldRefreshToken.AccessToken); err != nil {
+		Logger.Error("DeleteTokens error", err)
+		return nil, err
+	}
 
 	user := oldRefreshToken.AccessToken.User
 
@@ -79,10 +113,16 @@ func (p *RefreshTokenGrant) HandleResponse(request http.Request) (encode.Message
 		return nil, util.NewOAuthRuntimeError()
 	}
 
+	if p.after != nil {
+		if err := p.after(request, accessToken, refreshToken, oldRefreshToken); err != nil {
+			return nil, err
+		}
+	}
+
 	return p.server.CreateResponse(accessToken, refreshToken), nil
 }
 
-func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.User) (*model.AccessToken, error) {
+func (p *refreshTokenGrant) createAccessToken(client *model.Client, user *model.User) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 	accessToken.Token = p.server.CreateToken(client, []string{})
 	accessToken.ExpiresAt = p.server.IssuerExpireTimeForAccessToken()
@@ -97,7 +137,7 @@ func (p *RefreshTokenGrant) createAccessToken(client *model.Client, user *model.
 	return accessToken, nil
 }
 
-func (p *RefreshTokenGrant) createRefreshToken(client *model.Client, user *model.User, accessToken *model.AccessToken) (*model.RefreshToken, error) {
+func (p *refreshTokenGrant) createRefreshToken(client *model.Client, user *model.User, accessToken *model.AccessToken) (*model.RefreshToken, error) {
 	if p.server.HasGrantType(util.OAUTH_REFRESH_TOKEN) {
 		refreshToken := &model.RefreshToken{}
 		refreshToken.Token = p.server.CreateRefreshToken(client, []string{})

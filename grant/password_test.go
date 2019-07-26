@@ -1,13 +1,14 @@
 package grant
 
 import (
+	"testing"
+
 	"github.com/helderfarias/oauthprovider-go/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCreate(t *testing.T) {
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 
 	assert.NotNil(t, grant)
 }
@@ -15,7 +16,7 @@ func TestCreate(t *testing.T) {
 func TestShouldBeCreateMessageForOnlyAccessToken(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
@@ -33,7 +34,7 @@ func TestShouldBeCreateMessageForOnlyAccessToken(t *testing.T) {
 }
 
 func TestErrorIfClientIdNullWhenHandleReponse(t *testing.T) {
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	req := NewRequest()
 
 	req.param["clientId"] = ""
@@ -44,7 +45,7 @@ func TestErrorIfClientIdNullWhenHandleReponse(t *testing.T) {
 }
 
 func TestErrorIfClientSecretNullWhenHandleReponse(t *testing.T) {
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	req := NewRequest()
 
 	req.param["clientId"] = "client"
@@ -56,7 +57,7 @@ func TestErrorIfClientSecretNullWhenHandleReponse(t *testing.T) {
 }
 
 func TestErrorIfClientNotExistsWhenHandleReponse(t *testing.T) {
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = &FakeServer{}
 	req := NewRequest()
@@ -73,7 +74,7 @@ func TestErrorIfClientNotExistsWhenHandleReponse(t *testing.T) {
 func TestErrorIfUserNameNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
@@ -90,7 +91,7 @@ func TestErrorIfUserNameNullWhenHandleReponse(t *testing.T) {
 func TestErrorIfPasswordNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
@@ -108,7 +109,7 @@ func TestErrorIfPasswordNullWhenHandleReponse(t *testing.T) {
 func TestErrorIfCallBackNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	grant.Callback = func(userName, password string) *model.User { return nil }
 	grant.server = server
 
@@ -127,7 +128,7 @@ func TestErrorIfCallBackNullWhenHandleReponse(t *testing.T) {
 func TestErrorIfInvalidAuthorizationHashWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
-	grant := &PasswordGrant{}
+	grant := &passwordGrant{}
 	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 

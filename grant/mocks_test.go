@@ -112,6 +112,10 @@ func (f *FakeServer) CreateToken(*model.Client, []string) string {
 	return ""
 }
 
+func (f *FakeServer) CreateRefreshToken(client *model.Client, copes []string) string {
+	return ""
+}
+
 func (f *FakeServer) IssuerExpireTimeForAccessToken() time.Time {
 	return time.Time{}
 }

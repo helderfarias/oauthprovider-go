@@ -4,23 +4,49 @@ import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	servertype "github.com/helderfarias/oauthprovider-go/server/type"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
-type ClientCredencial struct {
+type clientCredencial struct {
 	server servertype.Authorizable
+	before HandleResponseFunc
+	after  HandleResponseFunc
 }
 
-func (p *ClientCredencial) SetServer(server servertype.Authorizable) {
+type ClientCredencialOption func(*clientCredencial)
+
+func NewClientCredencial(opts ...ClientCredencialOption) *clientCredencial {
+	s := &clientCredencial{}
+
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
+}
+
+func ClientCredencialAfter(fn HandleResponseFunc) ClientCredencialOption {
+	return func(a *clientCredencial) {
+		a.after = fn
+	}
+}
+
+func ClientCredencialBefore(fn HandleResponseFunc) ClientCredencialOption {
+	return func(a *clientCredencial) {
+		a.before = fn
+	}
+}
+
+func (p *clientCredencial) SetServer(server servertype.Authorizable) {
 	p.server = server
 }
 
-func (p *ClientCredencial) Identifier() string {
+func (p *clientCredencial) Identifier() string {
 	return util.OAUTH_CLIENT_CREDENTIALS
 }
 
-func (p *ClientCredencial) HandleResponse(request http.Request) (encode.Message, error) {
+func (p *clientCredencial) HandleResponse(request http.Request) (encode.Message, error) {
 	authorization := request.GetAuthorizationBasic()
 	if authorization == nil ||
 		authorization[0] == "" ||
@@ -41,15 +67,27 @@ func (p *ClientCredencial) HandleResponse(request http.Request) (encode.Message,
 		return nil, util.NewInvalidScopeError()
 	}
 
+	if p.before != nil {
+		if err := p.before(request); err != nil {
+			return nil, err
+		}
+	}
+
 	accessToken, err := p.createAccessToken(client, scopes)
 	if err != nil {
 		return nil, util.NewOAuthRuntimeError()
 	}
 
+	if p.after != nil {
+		if err := p.after(request, accessToken); err != nil {
+			return nil, err
+		}
+	}
+
 	return p.server.CreateResponse(accessToken, nil), nil
 }
 
-func (p *ClientCredencial) createAccessToken(client *model.Client, scopes []string) (*model.AccessToken, error) {
+func (p *clientCredencial) createAccessToken(client *model.Client, scopes []string) (*model.AccessToken, error) {
 	accessToken := &model.AccessToken{}
 
 	accessToken.Token = p.server.CreateToken(client, scopes)

@@ -12,19 +12,45 @@ import (
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
-type AuthorizationCode struct {
+type authorizationCode struct {
 	server servertype.Authorizable
+	before HandleResponseFunc
+	after  HandleResponseFunc
 }
 
-func (this *AuthorizationCode) SetServer(server servertype.Authorizable) {
-	this.server = server
+type AuthorizationCodeOption func(*authorizationCode)
+
+func NewAuthorizationCode(opts ...AuthorizationCodeOption) *authorizationCode {
+	s := &authorizationCode{}
+
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
 }
 
-func (this *AuthorizationCode) Identifier() string {
+func AuthorizationCodeAfter(fn HandleResponseFunc) AuthorizationCodeOption {
+	return func(a *authorizationCode) {
+		a.after = fn
+	}
+}
+
+func AuthorizationCodeBefore(fn HandleResponseFunc) AuthorizationCodeOption {
+	return func(a *authorizationCode) {
+		a.before = fn
+	}
+}
+
+func (p *authorizationCode) SetServer(server servertype.Authorizable) {
+	p.server = server
+}
+
+func (p *authorizationCode) Identifier() string {
 	return util.OAUTH_CODE
 }
 
-func (this *AuthorizationCode) HandleResponse(request http.Request) (string, error) {
+func (p *authorizationCode) HandleResponse(request http.Request) (string, error) {
 	authorization := request.GetAuthorizationBasic()
 	if authorization == nil ||
 		authorization[0] == "" ||
@@ -35,7 +61,7 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 	clientID := authorization[0]
 	clientSecret := authorization[1]
 
-	client := this.server.FindByCredencials(clientID, clientSecret)
+	client := p.server.FindByCredencials(clientID, clientSecret)
 	if client == nil {
 		return "", util.NewInvalidClientError()
 	}
@@ -46,9 +72,16 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 		return "", util.NewInvalidRequestError(redirectURI)
 	}
 
-	_, err = this.server.CheckScope(request, clientID)
+	_, err = p.server.CheckScope(request, clientID)
 	if err != nil {
 		return "", util.NewInvalidScopeError()
+	}
+
+	if p.before != nil {
+		_, err = p.before(request)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	authorizeToken := &token.AuthorizeTokenGenerator{}
@@ -57,7 +90,7 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 		return "", util.NewOAuthRuntimeError()
 	}
 
-	err = this.server.StoreAuthzCode(&model.AuthzCode{Code: authzCode, ClientId: clientID})
+	err = p.server.StoreAuthzCode(&model.AuthzCode{Code: authzCode, ClientId: clientID})
 	if err != nil {
 		return "", util.NewOAuthRuntimeError()
 	}
@@ -68,6 +101,17 @@ func (this *AuthorizationCode) HandleResponse(request http.Request) (string, err
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
 	} else if state := strings.TrimSpace(request.GetParam(util.OAUTH_STATE)); state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)
+	}
+
+	if p.after != nil {
+		result, err := p.after(request, responseURI)
+		if err != nil {
+			return "", err
+		}
+
+		if result != "" {
+			responseURI = fmt.Sprintf("%s&%s", responseURI, result)
+		}
 	}
 
 	return responseURI, nil

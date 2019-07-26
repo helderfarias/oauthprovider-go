@@ -16,8 +16,8 @@ func New() *OAuthServer {
 
 func (o *OAuthServer) AuthorizationServer() *server.AuthorizationServer {
 	newServer := server.NewAuthorizationServer()
-	newServer.AddAuthzCode(&authorization.AuthorizationCode{})
-	newServer.AddAuthzCode(&authorization.AuthorizationToken{})
+	newServer.AddAuthzCode(authorization.NewAuthorizationCode())
+	newServer.AddAuthzCode(authorization.NewAuthorizationToken())
 	newServer.AccessTokenStorage = &memory.MemoryAccessTokenStorage{}
 	newServer.RefreshTokenStorage = &memory.MemoryRefreshTokenStorage{}
 	newServer.ClientStorage = &memory.MemoryClientStorage{}
