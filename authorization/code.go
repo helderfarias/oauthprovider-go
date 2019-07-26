@@ -7,21 +7,24 @@ import (
 
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	servertype "github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
 type authorizationCode struct {
-	server servertype.Authorizable
-	before HandleResponseFunc
-	after  HandleResponseFunc
+	server          server.Authorizable
+	before          HandleResponseFunc
+	after           HandleResponseFunc
+	tokenAuthMethod util.TokenAuthMethod
 }
 
 type AuthorizationCodeOption func(*authorizationCode)
 
 func NewAuthorizationCode(opts ...AuthorizationCodeOption) *authorizationCode {
-	s := &authorizationCode{}
+	s := &authorizationCode{
+		tokenAuthMethod: util.Post,
+	}
 
 	for _, o := range opts {
 		o(s)
@@ -42,7 +45,13 @@ func AuthorizationCodeBefore(fn HandleResponseFunc) AuthorizationCodeOption {
 	}
 }
 
-func (p *authorizationCode) SetServer(server servertype.Authorizable) {
+func AuthorizationCodeTokenAuthMethd(arg util.TokenAuthMethod) AuthorizationCodeOption {
+	return func(a *authorizationCode) {
+		a.tokenAuthMethod = arg
+	}
+}
+
+func (p *authorizationCode) SetServer(server server.Authorizable) {
 	p.server = server
 }
 
@@ -50,29 +59,98 @@ func (p *authorizationCode) Identifier() string {
 	return util.OAUTH_CODE
 }
 
-func (p *authorizationCode) HandleResponse(request http.Request) (string, error) {
-	authorization := request.GetAuthorizationBasic()
-	if authorization == nil ||
-		authorization[0] == "" ||
-		authorization[1] == "" {
-		return "", util.NewBadCredentialsError()
+func (p *authorizationCode) checkCodeChallenge(request http.Request) (model.AuthzCodeChallenge, error) {
+	if p.tokenAuthMethod != util.NonePKCE {
+		return model.AuthzCodeChallenge{}, nil
 	}
 
-	clientID := authorization[0]
-	clientSecret := authorization[1]
+	code := request.GetParam(util.OAUTH_CODE_CHALLENGE)
+	if code == "" {
+		code = request.GetParamUri(util.OAUTH_CODE_CHALLENGE)
+	}
 
-	client := p.server.FindByCredencials(clientID, clientSecret)
+	method := request.GetParam(util.OAUTH_CODE_CHALLENGE_METHOD)
+	if method == "" {
+		method = request.GetParamUri(util.OAUTH_CODE_CHALLENGE_METHOD)
+	}
+
+	if code == "" {
+		return model.AuthzCodeChallenge{}, util.NewInvalidRequestError(util.OAUTH_CODE_CHALLENGE)
+	}
+
+	if method == "" {
+		return model.AuthzCodeChallenge{}, util.NewInvalidRequestError(util.OAUTH_CODE_CHALLENGE_METHOD)
+	}
+
+	if method != "S256" && method != "S512" {
+		return model.AuthzCodeChallenge{}, util.NewInvalidCodeChallengeMethodError()
+	}
+
+	return model.AuthzCodeChallenge{Code: code, Method: method}, nil
+}
+
+func (p *authorizationCode) findAppCredencials(request http.Request) (string, string, error) {
+	clientID, clientSecret := "", ""
+
+	if data := request.GetAuthorizationBasic(); data != nil && len(data) >= 1 {
+		clientID = data[0]
+		clientSecret = data[1]
+	}
+
+	if clientID == "" {
+		clientID = request.GetParam(util.OAUTH_CLIENT_ID)
+		if clientID == "" {
+			clientID = request.GetParamUri(util.OAUTH_CLIENT_ID)
+		}
+	}
+
+	if clientSecret == "" {
+		clientSecret = request.GetParam(util.OAUTH_CLIENT_SECRET)
+		if clientSecret == "" {
+			clientSecret = request.GetParamUri(util.OAUTH_CLIENT_SECRET)
+		}
+	}
+
+	if clientID == "" {
+		return "", "", util.NewInvalidRequestError(util.OAUTH_CLIENT_ID)
+	}
+
+	return clientID, clientSecret, nil
+}
+
+func (p *authorizationCode) findClientByTokenMethod(clientID string, clientSecret string, request http.Request) (*model.Client, error) {
+	if p.tokenAuthMethod == util.Post {
+		client := p.server.FindByCredencials(clientID, clientSecret)
+		if client == nil {
+			return nil, util.NewInvalidClientError()
+		}
+		return client, nil
+	}
+
+	client := p.server.FindClientById(clientID)
 	if client == nil {
-		return "", util.NewInvalidClientError()
+		return nil, util.NewInvalidClientError()
 	}
 
-	redirectURI := client.RedirectUri
-	_, err := url.QueryUnescape(redirectURI)
-	if err != nil || redirectURI == "" {
-		return "", util.NewInvalidRequestError(redirectURI)
+	return client, nil
+}
+
+func (p *authorizationCode) HandleResponse(request http.Request) (string, error) {
+	clientID, clientSecret, err := p.findAppCredencials(request)
+	if err != nil {
+		return "", err
 	}
 
-	_, err = p.server.CheckScope(request, clientID)
+	client, err := p.findClientByTokenMethod(clientID, clientSecret, request)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := url.QueryUnescape(client.RedirectUri); err != nil || client.RedirectUri == "" {
+		return "", util.NewInvalidRequestError("redirectURI")
+	}
+
+	_, err = p.server.CheckScope(request, client.Name)
 	if err != nil {
 		return "", util.NewInvalidScopeError()
 	}
@@ -90,12 +168,22 @@ func (p *authorizationCode) HandleResponse(request http.Request) (string, error)
 		return "", util.NewOAuthRuntimeError()
 	}
 
-	err = p.server.StoreAuthzCode(&model.AuthzCode{Code: authzCode, ClientId: clientID})
+	challenge, err := p.checkCodeChallenge(request)
+	if err != nil {
+		return "", err
+	}
+
+	err = p.server.StoreAuthzCode(&model.AuthzCode{
+		Code:                authzCode,
+		ClientId:            client.Name,
+		CodeChallenge:       challenge.Code,
+		CodeChallengeMethod: challenge.Method,
+	})
 	if err != nil {
 		return "", util.NewOAuthRuntimeError()
 	}
 
-	responseURI := fmt.Sprintf("%s?code=%s", redirectURI, authzCode)
+	responseURI := fmt.Sprintf("%s?code=%s", client.RedirectUri, authzCode)
 
 	if state := strings.TrimSpace(request.GetParamUri(util.OAUTH_STATE)); state != "" {
 		responseURI = fmt.Sprintf("%s&state=%s", responseURI, state)

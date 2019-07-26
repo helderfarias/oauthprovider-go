@@ -3,10 +3,12 @@ package model
 import "time"
 
 type AuthzCode struct {
-	ID          int64
-	Code        string
-	ClientId    string
-	TokenExpiry int64
+	ID                  int64
+	Code                string
+	ClientId            string
+	TokenExpiry         int64
+	CodeChallenge       string
+	CodeChallengeMethod string
 }
 
 func (a *AuthzCode) Expired() bool {

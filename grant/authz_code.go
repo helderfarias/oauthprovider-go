@@ -7,12 +7,12 @@ import (
 	"github.com/helderfarias/oauthprovider-go/http"
 	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
-	servertype "github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
 type authzCodeGrant struct {
-	server servertype.Authorizable
+	server server.Authorizable
 	before HandleResponseFunc
 	after  HandleResponseFunc
 }
@@ -41,7 +41,7 @@ func AuthzCodeGrantBefore(fn HandleResponseFunc) AuthzCodeGrantOption {
 	}
 }
 
-func (p *authzCodeGrant) SetServer(server servertype.Authorizable) {
+func (p *authzCodeGrant) SetServer(server server.Authorizable) {
 	p.server = server
 }
 

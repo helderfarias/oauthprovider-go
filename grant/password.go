@@ -4,12 +4,12 @@ import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	servertype "github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
 type passwordGrant struct {
-	server   servertype.Authorizable
+	server   server.Authorizable
 	callback UserPasswordCallback
 	before   HandleResponseFunc
 	after    HandleResponseFunc
@@ -47,7 +47,7 @@ func PasswordGrantBefore(fn HandleResponseFunc) PasswordGrantOption {
 	}
 }
 
-func (p *passwordGrant) SetServer(server servertype.Authorizable) {
+func (p *passwordGrant) SetServer(server server.Authorizable) {
 	p.server = server
 }
 

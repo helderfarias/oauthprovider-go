@@ -5,13 +5,13 @@ import (
 	"github.com/helderfarias/oauthprovider-go/http"
 	. "github.com/helderfarias/oauthprovider-go/log"
 	"github.com/helderfarias/oauthprovider-go/model"
-	servertype "github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/token"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
 type refreshTokenGrant struct {
-	server servertype.Authorizable
+	server server.Authorizable
 	before HandleResponseFunc
 	after  HandleResponseFunc
 }
@@ -40,7 +40,7 @@ func RefreshTokenGrantBefore(fn HandleResponseFunc) RefreshTokenGrantOption {
 	}
 }
 
-func (p *refreshTokenGrant) SetServer(server servertype.Authorizable) {
+func (p *refreshTokenGrant) SetServer(server server.Authorizable) {
 	p.server = server
 }
 

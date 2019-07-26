@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/helderfarias/oauthprovider-go/http"
-	"github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 )
 
 type ValidatorScope struct {
-	Server servertype.Authorizable
+	Server server.Authorizable
 }
 
 func (this *ValidatorScope) Execute(request http.Request, clientId string) ([]string, error) {

@@ -7,12 +7,12 @@ import (
 
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	servertype "github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
 type authorizationToken struct {
-	server servertype.Authorizable
+	server server.Authorizable
 	before HandleResponseFunc
 	after  HandleResponseFunc
 }
@@ -41,7 +41,7 @@ func AuthorizationTokenBefore(fn HandleResponseFunc) AuthorizationTokenOption {
 	}
 }
 
-func (this *authorizationToken) SetServer(server servertype.Authorizable) {
+func (this *authorizationToken) SetServer(server server.Authorizable) {
 	this.server = server
 }
 

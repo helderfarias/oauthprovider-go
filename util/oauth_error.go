@@ -15,6 +15,14 @@ type OAuthError struct {
 	ErrorType  string
 }
 
+func NewInvalidCodeChallengeMethodError() *OAuthError {
+	return &OAuthError{
+		StatusCode: 400,
+		GrantType:  "invalid_code_challenge_method",
+		ErrorType:  "The code challenge method is invalid.",
+	}
+}
+
 func NewInvalidScopeError() *OAuthError {
 	return &OAuthError{
 		StatusCode: 400,

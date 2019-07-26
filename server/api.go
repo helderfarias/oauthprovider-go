@@ -1,4 +1,4 @@
-package servertype
+package server
 
 import (
 	"time"
@@ -53,3 +53,10 @@ type Authorizable interface {
 
 	StoreAuthzCode(code *model.AuthzCode) error
 }
+
+type Resourceable interface {
+	GetAccessToken(request http.Request) (string, error)
+
+	ValidateRequest(request http.Request) (*model.AccessToken, error)
+}
+

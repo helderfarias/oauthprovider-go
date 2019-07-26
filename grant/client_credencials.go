@@ -4,12 +4,12 @@ import (
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
 	"github.com/helderfarias/oauthprovider-go/model"
-	servertype "github.com/helderfarias/oauthprovider-go/server/type"
+	"github.com/helderfarias/oauthprovider-go/server"
 	"github.com/helderfarias/oauthprovider-go/util"
 )
 
 type clientCredencial struct {
-	server servertype.Authorizable
+	server server.Authorizable
 	before HandleResponseFunc
 	after  HandleResponseFunc
 }
@@ -38,7 +38,7 @@ func ClientCredencialBefore(fn HandleResponseFunc) ClientCredencialOption {
 	}
 }
 
-func (p *clientCredencial) SetServer(server servertype.Authorizable) {
+func (p *clientCredencial) SetServer(server server.Authorizable) {
 	p.server = server
 }
 

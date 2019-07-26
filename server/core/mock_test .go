@@ -1,13 +1,9 @@
-package server
+package core
 
 import (
-	"testing"
-
 	"github.com/helderfarias/oauthprovider-go/encode"
 	"github.com/helderfarias/oauthprovider-go/http"
-	"github.com/helderfarias/oauthprovider-go/server/type"
-	"github.com/helderfarias/oauthprovider-go/util"
-	"github.com/stretchr/testify/assert"
+	"github.com/helderfarias/oauthprovider-go/server"
 )
 
 type OAuthRequestFake struct {
@@ -21,7 +17,7 @@ type OAuthResponseFake struct {
 }
 
 type GrantTypeFake struct {
-	server servertype.Authorizable
+	server server.Authorizable
 }
 
 type MessageFake struct {
@@ -99,7 +95,7 @@ func (o *GrantTypeFake) HandleResponse(request http.Request) (encode.Message, er
 	return &MessageFake{}, nil
 }
 
-func (g *GrantTypeFake) SetServer(origin servertype.Authorizable) {
+func (g *GrantTypeFake) SetServer(origin server.Authorizable) {
 	g.server = origin
 }
 
@@ -118,54 +114,3 @@ func (g *GrantTypeFake) getDefaultScope() string {
 	return ""
 }
 
-func TestShouldBeAddGrantType(t *testing.T) {
-	server := NewAuthorizationServer()
-	grant := &GrantTypeFake{}
-
-	server.AddGrant(grant)
-
-	assert.Equal(t, true, server.HasGrantType("password"))
-	assert.NotNil(t, grant.server)
-}
-
-func TestErrorIfGrantTypeEmptyWhenGetAccessToken(t *testing.T) {
-	server := NewAuthorizationServer()
-	grant := &GrantTypeFake{}
-	req := &OAuthRequestFake{param: ""}
-	res := &OAuthResponseFake{param: ""}
-
-	server.AddGrant(grant)
-
-	_, err := server.HandlerAccessToken(req, res)
-
-	assert.NotNil(t, err)
-	assert.Equal(t, err.(*util.OAuthError).GrantType, "invalid_request")
-}
-
-func TestErrorIfGrantTypeUnknownWhenGetAccessToken(t *testing.T) {
-	server := NewAuthorizationServer()
-	grant := &GrantTypeFake{}
-	req := &OAuthRequestFake{param: "unknown"}
-	res := &OAuthResponseFake{param: ""}
-
-	server.AddGrant(grant)
-
-	_, err := server.HandlerAccessToken(req, res)
-
-	assert.NotNil(t, err)
-	assert.Equal(t, err.(*util.OAuthError).GrantType, "unsupported_grant_type")
-}
-
-func TestCreateTokenValid(t *testing.T) {
-	server := NewAuthorizationServer()
-	grant := &GrantTypeFake{}
-	req := &OAuthRequestFake{param: "password"}
-	res := &OAuthResponseFake{param: ""}
-
-	server.AddGrant(grant)
-
-	token, err := server.HandlerAccessToken(req, res)
-
-	assert.Nil(t, err)
-	assert.NotEqual(t, token, "message")
-}
