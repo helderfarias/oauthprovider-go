@@ -17,7 +17,7 @@ func TestShouldBeCreateMessageForOnlyAccessToken(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
 	grant := &passwordGrant{}
-	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
+	grant.callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -58,7 +58,7 @@ func TestErrorIfClientSecretNullWhenHandleReponse(t *testing.T) {
 
 func TestErrorIfClientNotExistsWhenHandleReponse(t *testing.T) {
 	grant := &passwordGrant{}
-	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
+	grant.callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = &FakeServer{}
 	req := NewRequest()
 
@@ -75,7 +75,7 @@ func TestErrorIfUserNameNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
 	grant := &passwordGrant{}
-	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
+	grant.callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -92,7 +92,7 @@ func TestErrorIfPasswordNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
 	grant := &passwordGrant{}
-	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
+	grant.callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -106,11 +106,11 @@ func TestErrorIfPasswordNullWhenHandleReponse(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestErrorIfCallBackNullWhenHandleReponse(t *testing.T) {
+func TestErrorIfcallBackNullWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
 	grant := &passwordGrant{}
-	grant.Callback = func(userName, password string) *model.User { return nil }
+	grant.callback = func(userName, password string) *model.User { return nil }
 	grant.server = server
 
 	req.param["clientId"] = "client"
@@ -129,7 +129,7 @@ func TestErrorIfInvalidAuthorizationHashWhenHandleReponse(t *testing.T) {
 	server := NewServer()
 	req := NewRequest()
 	grant := &passwordGrant{}
-	grant.Callback = func(userName, password string) *model.User { return &model.User{} }
+	grant.callback = func(userName, password string) *model.User { return &model.User{} }
 	grant.server = server
 
 	req.param["clientId"] = "client"

@@ -10,10 +10,12 @@ import (
 
 type passwordGrant struct {
 	server   servertype.Authorizable
-	Callback func(userName, password string) *model.User
+	callback UserPasswordCallback
 	before   HandleResponseFunc
 	after    HandleResponseFunc
 }
+
+type UserPasswordCallback func(userName, password string) *model.User
 
 type PasswordGrantOption func(*passwordGrant)
 
@@ -25,6 +27,12 @@ func NewPasswordGrant(opts ...PasswordGrantOption) *passwordGrant {
 	}
 
 	return s
+}
+
+func PasswordGrantCallback(fn UserPasswordCallback) PasswordGrantOption {
+	return func(a *passwordGrant) {
+		a.callback = fn
+	}
 }
 
 func PasswordGrantAfter(fn HandleResponseFunc) PasswordGrantOption {
@@ -84,7 +92,7 @@ func (p *passwordGrant) HandleResponse(request http.Request) (encode.Message, er
 		return nil, util.NewInvalidRequestError(util.OAUTH_PASSWORD)
 	}
 
-	user := p.Callback(userName, password)
+	user := p.callback(userName, password)
 	if user == nil {
 		return nil, util.NewInvalidCredentialsError()
 	}
